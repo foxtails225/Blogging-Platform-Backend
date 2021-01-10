@@ -1,11 +1,11 @@
 {
-  "name": "walnut-blogging-platform",
+  "name": "blogging-platform",
   "version": "0.0.0",
-  "description": "TypeScript + Mongoose + MongoDB + Express API Server",
+  "description": "Blogging Platform",
   "author": "",
   "license": "ISC",
   "scripts": {
-    "start": "npm run build && cross-env NODE_ENV=production node build/server.js",
+    "start": "npm run build && cross-env NODE_ENV=production node build/app.js",
     "dev": "concurrently \"tsc -w\" \"cross-env NODE_ENV=development nodemon\"",
     "build": "tsc",
     "test": "jest --forceExit --detectOpenHandles",

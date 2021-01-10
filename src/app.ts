@@ -1,82 +1,57 @@
+import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { Express } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
 import compression from 'compression';
 import { connect, set } from 'mongoose';
-import { dbConnection } from './database';
-import Routes from './interfaces/routes.interface';
-import errorMiddleware from './middlewares/error.middleware';
+import { db } from './database';
+import errorMiddleware from './middlewares/error';
 import { logger, stream } from './utils/logger';
+import validateEnv from './utils/validateEnv';
+import routes from './routes';
 
-class App {
-  public app: express.Application;
-  public port: string | number;
-  public env: string;
+validateEnv();
 
-  constructor(routes: Routes[]) {
-    this.app = express();
-    this.port = process.env.PORT || 3000;
-    this.env = process.env.NODE_ENV || 'development';
+const app: Express = express();
+const port: string | number = process.env.PORT || 3000;
+const env: string = process.env.NODE_ENV || 'development';
 
-    this.connectToDatabase();
-    this.initializeMiddlewares();
-    this.initializeRoutes(routes);
-    this.initializeErrorHandling();
-  }
+env !== 'production' && set('debug', true);
 
-  public listen() {
-    this.app.listen(this.port, () => {
-      logger.info(`App listening on the port ${this.port}`);
-    });
-  }
+connect(db.url, db.options).then(
+  () => {
+    logger.info('The database is connected.');
+  },
+  (error: string) => {
+    logger.error(`Unable to connect to the database: ${error}.`);
+  },
+);
+set('useFindAndModify', false);
 
-  public getServer() {
-    return this.app;
-  }
-
-  private connectToDatabase() {
-    if (this.env !== 'production') {
-      set('debug', true);
-    }
-
-    connect(dbConnection.url, dbConnection.options)
-      .then(() => {
-        logger.info('The database is connected.');
-      })
-      .catch((error: Error) => {
-        logger.error(`Unable to connect to the database: ${error}.`);
-      });
-  }
-
-  private initializeMiddlewares() {
-    if (this.env === 'production') {
-      this.app.use(morgan('combined', { stream }));
-      this.app.use(cors({ origin: 'your.domain.com', credentials: true }));
-    } else if (this.env === 'development') {
-      this.app.use(morgan('dev', { stream }));
-      this.app.use(cors({ origin: true, credentials: true }));
-    }
-
-    this.app.use(hpp());
-    this.app.use(helmet());
-    this.app.use(compression());
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(cookieParser());
-  }
-
-  private initializeRoutes(routes: Routes[]) {
-    routes.forEach(route => {
-      this.app.use('/api/', route.router);
-    });
-  }
-
-  private initializeErrorHandling() {
-    this.app.use(errorMiddleware);
-  }
+if (env === 'production') {
+  app.use(morgan('combined', { stream }));
+  app.use(cors({ origin: 'your.domain.com', credentials: true }));
+} else if (env === 'development') {
+  app.use(morgan('dev', { stream }));
+  app.use(cors({ origin: true, credentials: true }));
 }
 
-export default App;
+app.use(hpp());
+app.use(helmet());
+app.use(compression());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+routes.forEach(route => {
+  app.use('/api/', route);
+});
+
+app.use(errorMiddleware);
+
+app.listen(port, () => {
+  logger.info(`App listening on the port ${port}`);
+});
