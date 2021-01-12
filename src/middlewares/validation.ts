@@ -1,7 +1,6 @@
 import { plainToClass } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { RequestHandler } from 'express';
-import HttpException from '../exceptions/HttpException';
 
 const validationMiddleware = (
   type: any,
@@ -12,7 +11,7 @@ const validationMiddleware = (
     validate(plainToClass(type, req[value]), { skipMissingProperties }).then((errors: ValidationError[]) => {
       if (errors.length > 0) {
         const message = errors.map((error: ValidationError) => Object.values(error.constraints)).join(', ');
-        next(new HttpException(400, message));
+        next(res.status(400).send(message));
       } else {
         next();
       }

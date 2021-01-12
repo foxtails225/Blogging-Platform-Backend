@@ -4,11 +4,11 @@ export interface User {
   email: string;
   password: string;
   avatar: string;
+  country: string;
+  phone: string;
   firstName: string;
   lastName: string;
-  country: string;
-  state: string;
-  phone: string;
+  bio: string;
   lastLoggedIn: Date;
   tier: string;
   role: string;

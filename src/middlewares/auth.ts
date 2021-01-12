@@ -1,16 +1,15 @@
 import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import HttpException from '../exceptions/HttpException';
 import { DataStoredInToken, RequestWithUser } from '../types/auth';
 import userModel from '../models/users';
 
 const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
-    const cookies = req.cookies;
+    const { authorization } = req.headers;
 
-    if (cookies && cookies.Authorization) {
+    if (authorization) {
       const secret = process.env.JWT_SECRET;
-      const verificationResponse = (await jwt.verify(cookies.Authorization, secret)) as DataStoredInToken;
+      const verificationResponse = (await jwt.verify(authorization.split(' ')[1], secret)) as DataStoredInToken;
       const userId = verificationResponse._id;
       const findUser = await userModel.findById(userId);
 
@@ -18,13 +17,13 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
         req.user = findUser;
         next();
       } else {
-        next(new HttpException(401, 'Wrong authentication token'));
+        next(res.status(401).send('Wrong authentication token'));
       }
     } else {
-      next(new HttpException(404, 'Authentication token missing'));
+      next(res.status(401).send('Authentication token missing'));
     }
   } catch (error) {
-    next(new HttpException(401, 'Wrong authentication token'));
+    next(res.status(401).send('Wrong authentication token'));
   }
 };
 
