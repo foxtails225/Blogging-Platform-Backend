@@ -8,14 +8,14 @@ import { RequestWithUser, DataStoredInToken, TokenData } from '../types/auth';
 import UserModel from '../models/users';
 import { isEmpty } from '../utils/util';
 
-export const signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const signUp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userData: CreateUserDto = req.body;
 
   try {
-    isEmpty(userData) && res.status(400).send({ message: "You're not userData" });
+    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
     const findUser: User = await UserModel.findOne({ email: userData.email });
 
-    findUser && res.status(409).send({ message: `You're email ${userData.email} already exists` });
+    if (findUser) return res.status(409).send({ message: `You're email ${userData.email} already exists` });
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     //@ts-ignore
     const user: User = await UserModel.create({ ...userData, password: hashedPassword });
@@ -27,17 +27,17 @@ export const signUp = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
-export const logIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const logIn = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userData: CreateUserDto = req.body;
 
   try {
-    isEmpty(userData) && res.status(400).send({ message: "You're not userData" });
+    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
     const findUser: User = await UserModel.findOneAndUpdate({ email: userData.email }, { lastLoggedIn: userData.lastLoggedIn });
 
-    !findUser && res.status(409).send({ message: `You're email ${userData.email} not found` });
+    if (!findUser) return res.status(409).send({ message: `You're email ${userData.email} not found` });
     const isPasswordMatching: boolean = await bcrypt.compare(userData.password, findUser.password);
 
-    !isPasswordMatching && res.status(409).send({ message: "You're password not matching" });
+    if (!isPasswordMatching) return res.status(409).send({ message: "You're password not matching" });
     const TokenData: TokenData = createToken(findUser);
     const cookie: string = createCookie(TokenData);
     res.setHeader('Set-Cookie', [cookie]);
@@ -47,14 +47,14 @@ export const logIn = async (req: Request, res: Response, next: NextFunction): Pr
   }
 };
 
-export const logOut = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+export const logOut = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const userData: User = req.user;
 
   try {
-    isEmpty(userData) && res.status(400).send({ message: "You're not userData" });
+    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
     const findUser: User = await UserModel.findOne({ password: userData.password });
 
-    !findUser && res.status(409).send({ message: "You're not user" });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
     res.setHeader('Set-Cookie', ['Authorization=; Max-age=0']);
     res.status(200).json({ data: findUser });
   } catch (error) {

@@ -22,7 +22,7 @@ const userSchema: Schema = new Schema(
     },
     cover: {
       type: String,
-      default: 'http://www.gravatar.com/avatar/?d=mp',
+      default: '/static/images/covers/cover.jpg',
     },
     country: String,
     phone: String,
@@ -30,6 +30,7 @@ const userSchema: Schema = new Schema(
     lastName: String,
     lastLoggedIn: Date,
     bio: String,
+    quote: String,
     tier: {
       type: String,
       enum: ['premium', 'basic'],
