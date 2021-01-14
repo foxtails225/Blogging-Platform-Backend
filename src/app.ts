@@ -5,6 +5,7 @@ import express, { Express } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
+import path from 'path';
 import compression from 'compression';
 import { connect, set } from 'mongoose';
 import { db } from './database';
@@ -44,6 +45,7 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('./build'));
 app.use(cookieParser());
 
 routes.forEach(route => {
@@ -51,6 +53,9 @@ routes.forEach(route => {
 });
 
 app.use(errorMiddleware);
+app.get('/', function (req, res) {
+  res.sendFile(path.join('./build/' + 'index.html'));
+});
 
 app.listen(port, () => {
   logger.info(`App listening on the port ${port}`);
