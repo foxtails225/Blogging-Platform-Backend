@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import { getInfo, updateInfo, updatePassword } from '../controllers/account';
+import { getInfo, getStatus, updateInfo, updatePassword } from '../controllers/account';
 import authMiddleware from '../middlewares/auth';
 
 const router: Router = Router();
 const path = '/account';
 
-router.get(`${path}/me`, authMiddleware, getInfo);
+router.get(`${path}/about`, authMiddleware, getInfo);
+router.get(`${path}/status`, authMiddleware, getStatus);
 router.put(`${path}/update`, authMiddleware, updateInfo);
-router.put(`${path}/update-password`, authMiddleware, updatePassword);
+router.put(`${path}/password`, authMiddleware, updatePassword);
 
 export default router;

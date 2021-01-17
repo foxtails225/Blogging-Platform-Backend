@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Express } from 'express';
+import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
@@ -53,7 +53,7 @@ routes.forEach(route => {
 });
 
 app.use(errorMiddleware);
-app.get('/', function (req, res) {
+app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join('./build/' + 'index.html'));
 });
 

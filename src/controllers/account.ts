@@ -1,19 +1,16 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { User } from '../types/user';
+import { RequestWithUser } from '../types/auth';
 import UserModel from '../models/users';
+import PostModel from '../models/posts';
 import { isEmpty } from '../utils/util';
 
-export const getInfo = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const { authorization } = req.headers;
-  if (!authorization) return res.status(401).send({ message: 'Authorization token missing' });
+export const getInfo = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
 
   try {
-    const userId = getIdByToken(authorization);
-    if (!userId) return res.status(401).send({ message: 'jwt expired' });
-
-    const findUser: User = await UserModel.findOne({ _id: userId });
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
     if (!findUser) return res.status(409).send({ message: "You're not user" });
     res.status(200).json({ user: findUser });
   } catch (error) {
@@ -21,41 +18,35 @@ export const getInfo = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
-export const updateInfo = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const { authorization } = req.headers;
-  const { userData } = req.body;
+export const getStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
 
   try {
-    const userId = getIdByToken(authorization);
-    if (!userId) return res.status(401).send({ message: 'jwt expired' });
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
 
-    const findUser: User = await UserModel.findOne({ _id: userId });
-    if (!findUser) return res.status(401).send({ message: "You're not user" });
-    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
+    const published = await PostModel.countDocuments({ author: _id, status: 'approved' });
+    const pending = await PostModel.countDocuments({ author: _id, status: 'pending' });
+    const comments = 0;
+    const tags = 0;
+    const status = { published, pending, comments, tags };
 
-    const updateUserById: User = await UserModel.findByIdAndUpdate(userId, { ...userData });
-    if (!updateUserById) return res.status(409).send({ message: "You're not user" });
-    res.status(200).json({ user: updateUserById });
+    res.status(200).json({ status });
   } catch (error) {
     next(error);
   }
 };
 
-export const updatePassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const { authorization } = req.headers;
+export const updateInfo = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
   const { userData } = req.body;
-  if (!authorization) return res.status(401).send({ message: 'Authorization token missing' });
 
   try {
-    const userId = getIdByToken(authorization);
-    if (!userId) res.status(401).send({ message: 'jwt expired' });
-
-    const findUser: User = await UserModel.findOne({ _id: userId });
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
     if (!findUser) return res.status(401).send({ message: "You're not user" });
-    isEmpty(userData) && res.status(400).send({ message: "You're not userData" });
+    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const user: User = await UserModel.findByIdAndUpdate(userId, { password: hashedPassword });
+    const user: User = await UserModel.findByIdAndUpdate(_id, { ...userData });
     if (!user) return res.status(409).send({ message: "You're not user" });
     res.status(200).json({ user });
   } catch (error) {
@@ -63,13 +54,20 @@ export const updatePassword = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-const getIdByToken = (token: string): any => {
-  const accessToken = token.split(' ')[1];
-  const secret: string = process.env.JWT_SECRET;
+export const updatePassword = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { userData } = req.body;
+
   try {
-    const { _id } = jwt.verify(accessToken, secret) as any;
-    return _id;
-  } catch (err: any) {
-    return null;
+    const findUser: User = await UserModel.findOne({ _id });
+    if (!findUser) return res.status(401).send({ message: "You're not user" });
+    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
+
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const user: User = await UserModel.findByIdAndUpdate(_id, { password: hashedPassword });
+    if (!user) return res.status(409).send({ message: "You're not user" });
+    res.status(200).json({ user });
+  } catch (error) {
+    next(error);
   }
 };
