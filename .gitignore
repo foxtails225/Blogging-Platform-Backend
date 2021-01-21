@@ -9,13 +9,13 @@
 /coverage
 
 # production
-/build
 /dist
 
 # log
 /src/logs
 
 # misc
+.idea
 .DS_Store
 /.env
 /.env.local

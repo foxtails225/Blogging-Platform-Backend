@@ -12,22 +12,45 @@ const { ObjectId } = Types;
 
 export const getPosts = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id, role } = req.user;
-  const email = req.query.email as string;
-  const page = parseInt(req.query.page as string);
+  const email = req.body.email as string;
+  const page = parseInt(req.body.page as string);
   const limit = 7;
 
   try {
     //@ts-ignore
     const author: User = await UserModel.findOne({ email });
-    const search = ObjectId(author._id).equals(_id) || role === 'admin' ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
+    const isAuthor = ObjectId(author._id).equals(_id);
+    const isAdmin = role === 'admin';
+    const search = isAdmin ? {} : isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
     const count = await PostModel.countDocuments({ author: author._id, status: search });
     const posts: Post[] = await PostModel.find({ author: author._id, status: search })
       .populate('author')
       .sort({ createdAt: -1 })
       .skip(limit * page - limit)
       .limit(page);
-    console.log(count / limit);
-    res.status(201).json({ posts, pages: count / limit });
+
+    res.status(201).json({ posts, isAuthor: isAuthor, pages: Math.ceil(count / limit) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getReadingPosts = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const page = parseInt(req.query.page as string);
+  const limit = 7;
+
+  try {
+    //@ts-ignore
+    const search = isAdmin ? {} : isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
+    const count = await PostModel.countDocuments({ author: _id, status: search });
+    const posts: Post[] = await PostModel.find({ author: _id, status: search })
+      .populate('author')
+      .sort({ createdAt: -1 })
+      .skip(limit * page - limit)
+      .limit(page);
+
+    res.status(201).json({ posts, pages: Math.ceil(count / limit) });
   } catch (error) {
     next(error);
   }
