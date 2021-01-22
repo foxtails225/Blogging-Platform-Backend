@@ -34,12 +34,13 @@ set('useFindAndModify', false);
 
 if (env === 'production') {
   app.use(morgan('combined', { stream }));
+  app.use(cors({ origin: 'https://dankstocks.com', credentials: true }));
 } else if (env === 'development') {
   app.use(morgan('dev', { stream }));
+  app.use(cors({ origin: true, credentials: true }));
 }
 
 app.use(hpp());
-app.use(cors());
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 app.use(express.json());
