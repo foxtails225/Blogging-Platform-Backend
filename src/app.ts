@@ -34,14 +34,13 @@ set('useFindAndModify', false);
 
 if (env === 'production') {
   app.use(morgan('combined', { stream }));
-  app.use(cors({ origin: 'your.domain.com', credentials: true }));
 } else if (env === 'development') {
   app.use(morgan('dev', { stream }));
-  app.use(cors({ origin: true, credentials: true }));
 }
 
 app.use(hpp());
-app.use(helmet());
+app.use(cors());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,7 +53,7 @@ routes.forEach(route => {
 
 app.use(errorMiddleware);
 app.get('/', (req: Request, res: Response) => {
-  res.sendFile(path.join('./build/' + 'index.html'));
+  res.sendFile(path.resolve('./build/' + 'index.html'));
 });
 
 app.listen(port, () => {
