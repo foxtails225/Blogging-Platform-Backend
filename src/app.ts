@@ -2,8 +2,6 @@ import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express, Request, Response } from 'express';
-import https from 'https';
-import fs from 'fs';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
