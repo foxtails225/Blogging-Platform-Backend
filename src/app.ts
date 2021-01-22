@@ -21,7 +21,6 @@ validateEnv();
 const app: Express = express();
 const port: string | number = process.env.PORT || 3000;
 const env: string = process.env.NODE_ENV || 'development';
-let options = {};
 env !== 'production' && set('debug', true);
 
 connect(db.url, db.options).then(
@@ -35,10 +34,6 @@ connect(db.url, db.options).then(
 set('useFindAndModify', false);
 
 if (env === 'production') {
-  options = {
-    cert: fs.readFileSync(path.resolve('./ssl/' + 'cert.crt')),
-    key: fs.readFileSync(path.resolve('./ssl/' + '/private.key')),
-  };
   app.use(morgan('combined', { stream }));
 } else if (env === 'development') {
   app.use(morgan('dev', { stream }));
@@ -62,12 +57,6 @@ app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.resolve('./build/' + 'index.html'));
 });
 
-if (env === 'production') {
-  https.createServer(options, app).listen(port, () => {
-    logger.info(`App listening on the port ${port}`);
-  });
-} else {
-  app.listen(port, () => {
-    logger.info(`App listening on the port ${port}`);
-  });
-}
+app.listen(port, () => {
+  logger.info(`App listening on the port ${port}`);
+});
