@@ -21,7 +21,6 @@ validateEnv();
 const app: Express = express();
 const port: string | number = process.env.PORT || 3000;
 const env: string = process.env.NODE_ENV || 'development';
-const keyDir = '../ssl';
 let options = {};
 env !== 'production' && set('debug', true);
 
@@ -37,9 +36,8 @@ set('useFindAndModify', false);
 
 if (env === 'production') {
   options = {
-    cert: fs.readFileSync(keyDir + '/cert.crt'),
-    ca: fs.readFileSync(keyDir + '/ca.crt'),
-    key: fs.readFileSync(keyDir + '/private.key'),
+    cert: fs.readFileSync(path.resolve('./ssl/' + 'cert.crt')),
+    key: fs.readFileSync(path.resolve('./ssl/' + '/private.key')),
   };
   app.use(morgan('combined', { stream }));
 } else if (env === 'development') {
