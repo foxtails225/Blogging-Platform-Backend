@@ -9,7 +9,10 @@ const postSchema: Schema = new Schema(
       type: ObjectId,
       ref: 'User',
     },
-    slug: String,
+    slug: {
+      type: String,
+      unique: true,
+    },
     title: String,
     content: String,
     disclosure: String,
