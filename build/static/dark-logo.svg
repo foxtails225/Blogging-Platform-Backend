@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100px" height="35px" viewBox="0 0 4598 1811" version="1.1"
+<svg width="100%" height="100%" viewBox="0 0 4907 1811" version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
     xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <title>Logo</title>
-    <desc>Created with Sketch.</desc>
     <g id="Dark">
         <path d="M1847.66,479.927l4.527,-4.527l603.834,603.835l737.074,-737.075l-340.067,-340.067l897.247,-2.093l-0.323,899.017l-342.107,-342.107l-951.194,951.194l-0.63,-0.63l-0.63,0.63l-607.731,-607.732l-910.338,910.338l-214.749,-214.75l1120.56,-1120.56l4.527,4.527Zm1885.35,378.171l0.302,-841.103l-839.447,1.958l311.218,311.218c6.621,6.621 6.621,17.357 -0,23.979l-737.075,737.074c-6.621,6.621 -17.357,6.621 -23.978,-0l-594.454,-594.454c-1.275,0.146 -2.563,0.146 -3.836,0l-1099.19,1099.19l190.771,190.771l898.348,-898.348c6.622,-6.622 17.358,-6.622 23.979,-0l596.372,596.372l939.834,-939.835c6.622,-6.621 17.358,-6.621 23.979,0l313.178,313.178Z" style="fill:#58ad6e;"/>
         <g transform="matrix(4.16667,0,0,4.16667,-1829,-905.73)">
             <text x="430.619px" y="497.995px" style="font-family:'Consolas-Bold', 'Consolas', monospace;font-weight:700;font-size:198.635px;fill:#fff;">DANK</text>
             <text x="867.462px" y="497.995px" style="font-family:'Consolas-Bold', 'Consolas', monospace;font-weight:700;font-size:198.635px;fill:#6ba83b;">STOCKS</text>
         </g>
-        <text x="4461.71px" y="1169.25px" style="font-family:'Consolas-Bold', 'Consolas', monospace;font-weight:700;font-size:62.5px;fill:#6ba83b;">.com</text>
+        <text x="4434.07px" y="1167.51px" style="font-family:'Consolas-Bold', 'Consolas', monospace;font-weight:700;font-size:217.621px;fill:#6ba83b;">.com</text>
     </g>
 </svg>
