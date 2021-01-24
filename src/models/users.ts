@@ -16,10 +16,7 @@ const userSchema: Schema = new Schema(
       type: String,
       required: true,
     },
-    avatar: {
-      type: String,
-      default: 'http://www.gravatar.com/avatar/?d=mp',
-    },
+    avatar: String,
     cover: {
       type: String,
       default: '/static/images/covers/cover.jpg',
