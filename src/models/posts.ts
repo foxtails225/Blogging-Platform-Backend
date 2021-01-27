@@ -24,8 +24,8 @@ const postSchema: Schema = new Schema(
     ],
     viewers: [
       {
-        type: ObjectId,
-        ref: 'User',
+        type: String,
+        unique: true,
       },
     ],
     liked: {
@@ -45,6 +45,12 @@ const postSchema: Schema = new Schema(
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    comments: [
+      {
+        type: ObjectId,
+        ref: 'Comment',
+      },
+    ],
     week: Number,
     month: Number,
     year: Number,

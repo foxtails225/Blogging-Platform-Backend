@@ -1,5 +1,5 @@
 import { model, Schema, Document } from 'mongoose';
-import { Post } from '../types/post';
+import { Bookmark } from '../types/bookmark';
 
 const { ObjectId } = Schema.Types;
 
@@ -17,6 +17,6 @@ const bookmarkSchema: Schema = new Schema(
   { timestamps: true },
 );
 
-const BookmarkModel = model<Post & Document>('Bookmark', bookmarkSchema);
+const BookmarkModel = model<Bookmark & Document>('Bookmark', bookmarkSchema);
 
 export default BookmarkModel;

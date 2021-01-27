@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { NextFunction, Response } from 'express';
 import { RequestWithUser } from '../types/auth';
 import BookmarkModel from '../models/bookmarks';
+import { Bookmark } from '../types/bookmark';
 
 export const getBookmarksAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
@@ -8,30 +10,42 @@ export const getBookmarksAll = async (req: RequestWithUser, res: Response, next:
   const limit = 7;
 
   try {
-    const count = await BookmarkModel.countDocuments({ author: _id });
-    const posts = await BookmarkModel.find({ user: _id })
+    const count = await BookmarkModel.countDocuments({ user: _id });
+    const bookmarks = await BookmarkModel.find({ user: _id })
       .populate({ path: 'post', populate: { path: 'author' } })
       .sort({ createdAt: -1 })
       .skip(limit * page - limit)
       .limit(page);
 
-    res.status(201).json({ posts, pages: Math.ceil(count / limit) });
+    res.status(201).json({ bookmarks, pages: Math.ceil(count / limit) });
   } catch (error) {
     next(error);
   }
 };
 
-// export const createPost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-//   const { _id } = req.user;
+export const createBookmark = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { postId } = req.body;
 
-//   try {
-//     if (isEmpty(postData)) return res.status(400).send({ message: "You're not postData" });
-//     const findPosts: Post[] = await PostModel.find({ slug: postData.slug });
+  try {
+    const findBookmark: Bookmark = await BookmarkModel.findOne({ post: postId, user: _id });
+    if (findBookmark) return res.status(201).json({ bookmark: findBookmark });
+    //@ts-ignore
+    const bookmark: Bookmark = await BookmarkModel.create({ post: postId, user: _id });
+    res.status(201).json({ bookmark });
+  } catch (error) {
+    next(error);
+  }
+};
 
-//     const slug: string = findPosts.length > 0 ? postData.slug + findPosts.length : postData.slug;
-//     const post: Post = await PostModel.create({ ...postData, slug, author: _id });
-//     res.status(201).json({ data: post });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+export const deleteBookmark = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { postId } = req.body;
+
+  try {
+    await BookmarkModel.deleteOne({ post: postId, user: _id });
+    res.status(201).json({ message: 'bookmark removed' });
+  } catch (error) {
+    next(error);
+  }
+};
