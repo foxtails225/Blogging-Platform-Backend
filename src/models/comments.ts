@@ -5,7 +5,10 @@ const { ObjectId } = Schema.Types;
 
 const commentSchema: Schema = new Schema(
   {
-    slug: String,
+    parent: {
+      type: ObjectId,
+      ref: 'Comment',
+    },
     post: {
       type: ObjectId,
       ref: 'Post',
@@ -14,40 +17,11 @@ const commentSchema: Schema = new Schema(
       type: ObjectId,
       ref: 'User',
     },
-    reply: [
-      {
-        parent: {
-          type: ObjectId,
-          ref: 'Comment',
-        },
-        commentId: {
-          type: ObjectId,
-          ref: 'Post',
-        },
-        user: {
-          type: ObjectId,
-          ref: 'User',
-        },
-        comment: String,
-        depth: Number,
-        liked: {
-          count: {
-            type: Number,
-            default: 0,
-          },
-          users: [
-            {
-              type: ObjectId,
-              ref: 'User',
-            },
-          ],
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now(),
-        },
-      },
-    ],
+    depth: {
+      type: Number,
+      default: 0,
+    },
+    position: String,
     comment: String,
     liked: {
       count: {

@@ -47,7 +47,7 @@ const postSchema: Schema = new Schema(
     },
     comments: [
       {
-        type: ObjectId,
+        type: String,
         ref: 'Comment',
       },
     ],

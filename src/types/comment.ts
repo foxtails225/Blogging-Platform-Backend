@@ -1,21 +1,16 @@
 import { User } from './user';
 
-export interface Reply {
-  _id?: string;
-  parent: string;
-  commentId: string;
-  user: string;
-  comment: string;
-  depth: number;
-  createdAt: Date;
-}
-
 export interface Comments {
   _id?: string;
-  slug: string;
+  parent: string;
   post: string;
   user: string | User;
-  reply?: Reply[];
+  depth?: number;
+  position: string;
+  liked?: {
+    count: number;
+    users: string[];
+  };
   comment: string;
   active: boolean;
   createdAt?: Date;

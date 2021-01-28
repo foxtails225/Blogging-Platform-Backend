@@ -1,25 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { NextFunction, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import { CreateUserDto } from '../dtos/users.dto';
 import { User } from '../types/user';
 import UserModel from '../models/users';
-import { isEmpty } from '../utils/util';
+import PostModel from '../models/posts';
 
-export const getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const users: User[] = await UserModel.find();
-    res.status(200).json({ data: users });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getUserById = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const getUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userId: string = req.params.id;
 
   try {
-    const findUser: User = await UserModel.findOne({ _id: userId });
+    const findUser: User = await UserModel.findOne({ name: userId });
     if (!findUser) return res.status(409).send({ message: "You're not user" });
     res.status(200).json({ user: findUser });
   } catch (error) {
@@ -27,47 +16,21 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const createUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const userData: CreateUserDto = req.body;
-
-  try {
-    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
-
-    const findUser: User = await UserModel.findOne({ email: userData.email });
-    if (findUser) return res.status(409).send({ message: `You're email ${userData.email} already exists` });
-
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    // @ts-ignore
-    const user: User = await UserModel.create({ ...userData, password: hashedPassword });
-    res.status(201).json({ data: user });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-  const userId: string = req.params.id;
-  const userData: User = req.body;
-
-  try {
-    if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
-
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const user: User = await UserModel.findByIdAndUpdate(userId, { ...userData, password: hashedPassword });
-    if (!user) return res.status(409).send({ message: "You're not user" });
-    res.status(200).json({ data: user });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserStatus = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userId: string = req.params.id;
 
   try {
-    const user: User = await UserModel.findByIdAndDelete(userId);
-    if (!user) return res.status(409).send({ message: "You're not user" });
-    res.status(200).json({ data: user });
+    const findUser: User = await UserModel.findOne({ name: userId });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
+
+    const author = findUser._id;
+    const published = await PostModel.countDocuments({ author, status: 'approved' });
+    const pending = await PostModel.countDocuments({ author, status: 'pending' });
+    const comments = 0;
+    const tags = 0;
+    const status = { published, pending, comments, tags };
+
+    res.status(200).json({ status });
   } catch (error) {
     next(error);
   }

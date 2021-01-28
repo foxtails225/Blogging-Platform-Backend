@@ -6,11 +6,8 @@ import { RequestWithUser } from '../types/auth';
 import { Post } from '../types/post';
 import { User } from '../types/user';
 import { Bookmark } from '../types/bookmark';
-import { Comments } from '../types/comment';
 import UserModel from '../models/users';
 import PostModel from '../models/posts';
-import ViewsModel from '../models/views';
-import CommentModel from '../models/comments';
 import BookmarkModel from '../models/bookmarks';
 import { isEmpty } from '../utils/util';
 
@@ -20,10 +17,6 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
   // @ts-ignore
   const user: string | null = req.query.user;
   const slug: string = req.params.id;
-  const day = moment().day();
-  const week = moment().week();
-  const month = moment().month();
-  const year = moment().year();
   const ip: string =
     req.headers['x-forwarded-for'] ||
     req.connection.remoteAddress ||
@@ -32,19 +25,19 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
     (req.connection.socket ? req.connection.socket.remoteAddress : null);
 
   try {
-    const post: Post = await PostModel.findOne({ slug, status: { $nin: ['rejected', 'pending'] } }).populate('author');
-    const comments: Comments[] = await CommentModel.find({ post: post._id })
-      .populate('user')
-      .populate({ path: 'reply.user', populate: { path: 'user' } });
-
-    if (user && !post.viewers.includes(ip)) {
-      // @ts-ignore
-      await ViewsModel.create({ viewer: ip, day, week, month, year });
-      await PostModel.findOneAndUpdate({ slug, status: { $nin: ['rejected', 'pending'] } }, { $push: { viewers: ip } });
-    }
+    const post: Post = await PostModel.findOne({ slug, status: { $nin: ['rejected', 'pending'] } })
+      .populate('author')
+      .populate({
+        path: 'comments',
+        populate: { path: 'user' },
+        options: { sort: { position: 1, depth: 1, createdAt: 1 } },
+      });
     const bookmark: Bookmark = user && post && (await BookmarkModel.findOne({ post: post._id, user: user }));
 
-    res.status(200).json({ post, comments, isBookmark: Boolean(bookmark) });
+    if (user && !post.viewers.includes(ip))
+      await PostModel.findOneAndUpdate({ slug, status: { $nin: ['rejected', 'pending'] } }, { $push: { viewers: ip } });
+
+    res.status(200).json({ post, isBookmark: Boolean(bookmark) });
   } catch (error) {
     next(error);
   }
@@ -65,9 +58,10 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
     const count = await PostModel.countDocuments({ author: author._id, status: search });
     const posts: Post[] = await PostModel.find({ author: author._id, status: search })
       .populate('author')
+      .populate('comments')
       .sort({ createdAt: -1 })
       .skip(limit * page - limit)
-      .limit(page);
+      .limit(limit);
 
     res.status(201).json({ posts, isAuthor: isAuthor, pages: Math.ceil(count / limit) });
   } catch (error) {

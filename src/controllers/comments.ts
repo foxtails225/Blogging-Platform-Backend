@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Response, NextFunction } from 'express';
 import { RequestWithUser } from '../types/auth';
-import { Comments, Reply } from '../types/comment';
+import { Comments } from '../types/comment';
 import CommentModel from '../models/comments';
 import { isEmpty } from '../utils/util';
+import PostModel from '../models/posts';
 
 export const createComment = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
@@ -11,24 +12,14 @@ export const createComment = async (req: RequestWithUser, res: Response, next: N
 
   try {
     if (isEmpty(commentData)) return res.status(400).send({ message: 'Comment failed' });
-    const comment: Comments = await CommentModel.create({ ...commentData, user: _id });
 
-    res.status(201).json({ comment });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const createReply = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { _id } = req.user;
-  const replyData: Reply = req.body;
-
-  try {
-    if (isEmpty(replyData)) return res.status(400).send({ message: 'Reply failed' });
-    const comment: Comment = await CommentModel.findByIdAndUpdate(replyData.commentId, {
-      //@ts-ignore
-      $push: { reply: { ...replyData, user: _id, createdAt: new Date() } },
-    });
+    const response: Comments = await CommentModel.create({ ...commentData, user: _id });
+    const parent = commentData.parent ? commentData.parent : response._id;
+    const findComment: Comments = await CommentModel.findById(parent);
+    const position = findComment.position ? findComment.position + '-' + response._id : response._id + '-' + response._id;
+    const comment: Comments = await CommentModel.findByIdAndUpdate(response._id, { parent, position });
+    //@ts-ignore
+    await PostModel.findByIdAndUpdate(commentData.post, { $push: { comments: comment._id } });
 
     res.status(201).json({ comment });
   } catch (error) {
