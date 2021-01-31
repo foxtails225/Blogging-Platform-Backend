@@ -1,7 +1,7 @@
 {
-  "name": "blogging-platform",
+  "name": "dankstocks",
   "version": "0.0.0",
-  "description": "Blogging Platform",
+  "description": "Dankstock news and articles - best publishing platform",
   "author": "",
   "license": "ISC",
   "scripts": {

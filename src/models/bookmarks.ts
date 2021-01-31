@@ -13,6 +13,10 @@ const bookmarkSchema: Schema = new Schema(
       type: ObjectId,
       ref: 'User',
     },
+    archived: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

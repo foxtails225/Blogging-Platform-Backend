@@ -51,6 +51,7 @@ const postSchema: Schema = new Schema(
         ref: 'Comment',
       },
     ],
+    day: Number,
     week: Number,
     month: Number,
     year: Number,

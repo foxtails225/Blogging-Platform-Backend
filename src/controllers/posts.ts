@@ -5,15 +5,21 @@ import moment from 'moment';
 import { RequestWithUser } from '../types/auth';
 import { Post } from '../types/post';
 import { User } from '../types/user';
+import { View } from '../types/view';
 import { Bookmark } from '../types/bookmark';
 import UserModel from '../models/users';
 import PostModel from '../models/posts';
+import ViewModel from '../models/views';
 import BookmarkModel from '../models/bookmarks';
 import { isEmpty } from '../utils/util';
 
 const { ObjectId } = Types;
+const day = moment().date();
+const week = moment().week();
+const month = moment().month();
+const year = moment().year();
 
-export const getPost = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getPost = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   // @ts-ignore
   const user: string | null = req.query.user;
   const slug: string = req.params.id;
@@ -32,12 +38,15 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
         populate: { path: 'user' },
         options: { sort: { position: 1, depth: 1, createdAt: 1 } },
       });
-    const bookmark: Bookmark = user && post && (await BookmarkModel.findOne({ post: post._id, user: user }));
-
+    if (!post) return res.status(400).send({ message: 'post is not exist.' });
+    const findView: View = await ViewModel.findOne({ viewer: ip, post: post._id });
+    const findBookmark: Bookmark = user && (await BookmarkModel.findOne({ post: post._id, user: user }));
+    //@ts-ignore
+    !findView && (await ViewModel.create({ viewer: ip, post: post._id, day, week, month, year }));
     if (user && !post.viewers.includes(ip))
       await PostModel.findOneAndUpdate({ slug, status: { $nin: ['rejected', 'pending'] } }, { $push: { viewers: ip } });
 
-    res.status(200).json({ post, isBookmark: Boolean(bookmark) });
+    res.status(200).json({ post, isBookmark: Boolean(findBookmark) });
   } catch (error) {
     next(error);
   }
@@ -45,21 +54,21 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
 
 export const getPostsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id, role } = req.user;
-  const email = req.body.email as string;
-  const page = parseInt(req.body.page as string);
+  const { email, page, sortBy } = req.body;
+  const sort = sortBy ? sortBy : { createdAt: -1 };
+  const isAdmin = role === 'admin';
   const limit = 7;
 
   try {
     //@ts-ignore
     const author: User = await UserModel.findOne({ email });
     const isAuthor = ObjectId(author._id).equals(_id);
-    const isAdmin = role === 'admin';
-    const search = isAdmin ? {} : isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
+    const search: any = isAdmin ? {} : isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
     const count = await PostModel.countDocuments({ author: author._id, status: search });
     const posts: Post[] = await PostModel.find({ author: author._id, status: search })
       .populate('author')
       .populate('comments')
-      .sort({ createdAt: -1 })
+      .sort(sort)
       .skip(limit * page - limit)
       .limit(limit);
 
@@ -72,15 +81,12 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
 export const createPost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
   const postData: Post = req.body;
-  const week = moment().week();
-  const month = moment().month();
-  const year = moment().year();
 
   try {
     if (isEmpty(postData)) return res.status(400).send({ message: "You're not postData" });
     const findPosts: Post[] = await PostModel.find({ slug: postData.slug });
     const slug: string = findPosts.length > 0 ? postData.slug + findPosts.length : postData.slug;
-    const post: Post = await PostModel.create({ ...postData, slug, author: _id, week, month, year });
+    const post: Post = await PostModel.create({ ...postData, slug, author: _id, day, week, month, year });
 
     res.status(201).json({ data: post });
   } catch (error) {
