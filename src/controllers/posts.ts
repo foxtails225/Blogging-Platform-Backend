@@ -71,8 +71,9 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
       .sort(sort)
       .skip(skip * (page + 1) - skip)
       .limit(skip);
+    const totalPage = Math.ceil(count / skip) - 1 >= 0 ? Math.ceil(count / skip) - 1 : 0;
 
-    res.status(201).json({ posts, isAuthor: isAuthor, page: Math.ceil(count / skip) - 1 });
+    res.status(201).json({ posts, isAuthor: isAuthor, page: totalPage });
   } catch (error) {
     next(error);
   }
