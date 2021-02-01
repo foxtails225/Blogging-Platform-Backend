@@ -1,5 +1,6 @@
 import { NextFunction, Response } from 'express';
 import bcrypt from 'bcrypt';
+import moment from 'moment';
 import { User } from '../types/user';
 import { RequestWithUser } from '../types/auth';
 import UserModel from '../models/users';
@@ -32,6 +33,37 @@ export const getStatus = async (req: RequestWithUser, res: Response, next: NextF
     const status = { published, pending, comments, tags };
 
     res.status(200).json({ status });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStatistics = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const match = { author: _id, status: { $ne: 'rejected' } };
+  const dates = {
+    day: moment().date(),
+    week: moment().week(),
+    month: moment().month(),
+    year: moment().year(),
+  };
+
+  Object.values(req.query).map((item: string) => {
+    const value = Object.keys(dates).find((el: string) => el === item);
+    match[item] = dates[value];
+  });
+
+  try {
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
+    const posts = await PostModel.aggregate([
+      { $match: match },
+      { $project: { liked_len: { $size: '$liked.users' } } },
+      { $group: { _id: null, viewers: { $sum: 1 }, likes: { $sum: '$liked_len' } } },
+    ]);
+    const data = posts.length > 0 ? posts[0] : { viewers: 0, likes: 0 };
+
+    res.status(200).json({ data: data });
   } catch (error) {
     next(error);
   }

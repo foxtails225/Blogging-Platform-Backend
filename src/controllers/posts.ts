@@ -54,10 +54,10 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
 
 export const getPostsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id, role } = req.user;
-  const { email, page, sortBy } = req.body;
+  const { email, page, sortBy, limit } = req.body;
   const sort = sortBy ? sortBy : { createdAt: -1 };
+  const skip = limit ? limit : 7;
   const isAdmin = role === 'admin';
-  const limit = 7;
 
   try {
     //@ts-ignore
@@ -69,10 +69,10 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
       .populate('author')
       .populate('comments')
       .sort(sort)
-      .skip(limit * page - limit)
-      .limit(limit);
+      .skip(skip * (page + 1) - skip)
+      .limit(skip);
 
-    res.status(201).json({ posts, isAuthor: isAuthor, pages: Math.ceil(count / limit) });
+    res.status(201).json({ posts, isAuthor: isAuthor, page: Math.ceil(count / skip) - 1 });
   } catch (error) {
     next(error);
   }
