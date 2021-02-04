@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import admin from './admin';
 import account from './account';
 import auth from './auth';
 import users from './users';
@@ -6,6 +7,6 @@ import posts from './post';
 import bookmarks from './bookmarks';
 import comments from './comments';
 
-const routes: Router[] = [account, auth, users, posts, bookmarks, comments];
+const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments];
 
 export default routes;

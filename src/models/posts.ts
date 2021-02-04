@@ -25,7 +25,6 @@ const postSchema: Schema = new Schema(
     viewers: [
       {
         type: String,
-        unique: true,
       },
     ],
     liked: {

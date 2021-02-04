@@ -41,10 +41,12 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
     if (!post) return res.status(400).send({ message: 'post is not exist.' });
     const findView: View = await ViewModel.findOne({ viewer: ip, post: post._id });
     const findBookmark: Bookmark = user && (await BookmarkModel.findOne({ post: post._id, user: user }));
-    //@ts-ignore
-    !findView && (await ViewModel.create({ viewer: ip, post: post._id, day, week, month, year }));
-    if (user && !post.viewers.includes(ip))
+
+    if (user && !post.viewers.includes(ip)) {
+      //@ts-ignore
+      !findView && (await ViewModel.create({ viewer: ip, post: post._id, day, week, month, year }));
       await PostModel.findOneAndUpdate({ slug, status: { $nin: ['rejected', 'pending'] } }, { $push: { viewers: ip } });
+    }
 
     res.status(200).json({ post, isBookmark: Boolean(findBookmark) });
   } catch (error) {
@@ -63,9 +65,10 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
     //@ts-ignore
     const author: User = await UserModel.findOne({ email });
     const isAuthor = ObjectId(author._id).equals(_id);
-    const search: any = isAdmin ? {} : isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
-    const count = await PostModel.countDocuments({ author: author._id, status: search });
-    const posts: Post[] = await PostModel.find({ author: author._id, status: search })
+    const search: any = isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
+    const query = isAdmin ? { author: author._id } : { author: author._id, status: search };
+    const count = await PostModel.countDocuments(query);
+    const posts: Post[] = await PostModel.find(query)
       .populate('author')
       .populate('comments')
       .sort(sort)

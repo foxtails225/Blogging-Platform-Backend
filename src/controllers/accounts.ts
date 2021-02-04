@@ -58,8 +58,8 @@ export const getStatistics = async (req: RequestWithUser, res: Response, next: N
     if (!findUser) return res.status(409).send({ message: "You're not user" });
     const posts = await PostModel.aggregate([
       { $match: match },
-      { $project: { liked_len: { $size: '$liked.users' } } },
-      { $group: { _id: null, viewers: { $sum: 1 }, likes: { $sum: '$liked_len' } } },
+      { $project: { liked_len: { $size: '$liked.users' }, comments_len: { $size: '$viewers' } } },
+      { $group: { _id: null, viewers: { $sum: '$comments_len' }, likes: { $sum: '$liked_len' } } },
     ]);
     const data = posts.length > 0 ? posts[0] : { viewers: 0, likes: 0 };
 
