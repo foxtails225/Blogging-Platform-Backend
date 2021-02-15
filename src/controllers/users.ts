@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { User } from '../types/user';
 import UserModel from '../models/users';
 import PostModel from '../models/posts';
+import { RequestWithUser } from '../types/auth';
 
 export const getUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userId: string = req.params.id;
@@ -31,6 +32,17 @@ export const getUserStatus = async (req: Request, res: Response, next: NextFunct
     const status = { published, pending, comments, tags };
 
     res.status(200).json({ status });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const userData = req.body;
+
+  try {
+    const user: User = await UserModel.findByIdAndUpdate(userData._id, userData);
+    res.status(200).json({ user });
   } catch (error) {
     next(error);
   }

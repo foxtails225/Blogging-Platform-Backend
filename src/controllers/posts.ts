@@ -27,12 +27,27 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
     req.headers['x-forwarded-for'] ||
     req.connection.remoteAddress ||
     req.socket.remoteAddress ||
-    //@ts-ignore
+    // @ts-ignore
     (req.connection.socket ? req.connection.socket.remoteAddress : null);
 
   try {
-    const post: Post = await PostModel.findOne({ slug, status: { $nin: ['rejected', 'pending'] } })
+    const findUser: User | null = await UserModel.findById(user);
+    const findPost: Post | null = await PostModel.findOne({ slug });
+    //@ts-ignore
+    const isAuthor = findPost && ObjectId(findPost.author).equals(user);
+    const query =
+      findUser && (findUser.role === 'admin' || findUser.role === 'sub-admin')
+        ? { slug }
+        : isAuthor
+        ? { slug, status: { $nin: ['rejected'] } }
+        : { slug, status: { $nin: ['rejected', 'pending'] } };
+    // @ts-ignore
+    const post: Post = await PostModel.findOne(query)
       .populate('author')
+      .populate({
+        path: 'comments',
+        populate: { path: 'flags' },
+      })
       .populate({
         path: 'comments',
         populate: { path: 'user' },
@@ -66,17 +81,20 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
     const author: User = await UserModel.findOne({ email });
     const isAuthor = ObjectId(author._id).equals(_id);
     const search: any = isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
-    const query = isAdmin ? { author: author._id } : { author: author._id, status: search };
-    const count = await PostModel.countDocuments(query);
-    const posts: Post[] = await PostModel.find(query)
-      .populate('author')
-      .populate('comments')
-      .sort(sort)
-      .skip(skip * (page + 1) - skip)
-      .limit(skip);
-    const totalPage = Math.ceil(count / skip) - 1 >= 0 ? Math.ceil(count / skip) - 1 : 0;
+    const match = isAdmin ? { author: author._id } : { author: author._id, status: search };
+    const count = await PostModel.countDocuments(match);
+    const posts: Post[] = await PostModel.aggregate([
+      { $match: match },
+      { $addFields: { tags_count: { $size: '$tags' } } },
+      { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
+      { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: 'comments', localField: 'comments', foreignField: '_id', as: 'comments' } },
+      { $sort: Object.keys(sort).includes('tags') ? { tags_count: Object.values(sort)[0] } : sort },
+      { $skip: skip * (page + 1) - skip },
+      { $limit: skip },
+    ]);
 
-    res.status(201).json({ posts, isAuthor: isAuthor, page: totalPage });
+    res.status(201).json({ posts, isAuthor: isAuthor, count });
   } catch (error) {
     next(error);
   }
@@ -113,6 +131,17 @@ export const updateLikedPost = async (req: RequestWithUser, res: Response, next:
           $inc: { 'liked.count': -1 },
         });
 
+    res.status(200).json({ post });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const PostData = req.body;
+
+  try {
+    const post: Post = await PostModel.findByIdAndUpdate(PostData._id, PostData);
     res.status(200).json({ post });
   } catch (error) {
     next(error);

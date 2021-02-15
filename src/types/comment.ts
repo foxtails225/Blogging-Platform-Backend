@@ -1,3 +1,4 @@
+import { Flag } from './flag';
 import { User } from './user';
 
 export interface Comments {
@@ -9,10 +10,11 @@ export interface Comments {
   position: string;
   liked?: {
     count: number;
-    users: string[];
+    users: string[] | User[];
   };
   comment: string;
-  active: boolean;
+  flags: string[] | Flag[];
+  status: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

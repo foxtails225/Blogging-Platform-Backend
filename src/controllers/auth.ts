@@ -32,7 +32,10 @@ export const logIn = async (req: Request, res: Response, next: NextFunction): Pr
 
   try {
     if (isEmpty(userData)) return res.status(400).send({ message: "You're not userData" });
-    const findUser: User = await UserModel.findOneAndUpdate({ email: userData.email }, { lastLoggedIn: userData.lastLoggedIn });
+    const findUser: User = await UserModel.findOneAndUpdate(
+      { email: userData.email, status: true },
+      { lastLoggedIn: userData.lastLoggedIn },
+    );
 
     if (!findUser) return res.status(409).send({ message: `You're email ${userData.email} not found` });
     const isPasswordMatching: boolean = await bcrypt.compare(userData.password, findUser.password);

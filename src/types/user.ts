@@ -14,6 +14,8 @@ export interface User {
   tier: string;
   role: string;
   isPublic: boolean;
+  status: boolean;
+  reason: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { DataStoredInToken, RequestWithUser } from '../types/auth';
 import userModel from '../models/users';
 
-const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+const adminMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
     const { authorization } = req.headers;
 
@@ -27,4 +27,4 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
   }
 };
 
-export default authMiddleware;
+export default adminMiddleware;

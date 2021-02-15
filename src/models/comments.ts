@@ -35,7 +35,13 @@ const commentSchema: Schema = new Schema(
         },
       ],
     },
-    active: {
+    flags: [
+      {
+        type: ObjectId,
+        ref: 'Flag',
+      },
+    ],
+    status: {
       type: Boolean,
       default: true,
     },

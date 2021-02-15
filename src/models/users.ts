@@ -43,6 +43,15 @@ const userSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
+    status: {
+      type: Boolean,
+      default: true,
+    },
+    reason: {
+      type: String,
+      required: true,
+      default: 'Initial Registration',
+    },
   },
   { timestamps: true },
 );

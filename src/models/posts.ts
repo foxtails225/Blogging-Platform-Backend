@@ -44,9 +44,14 @@ const postSchema: Schema = new Schema(
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    reason: {
+      type: String,
+      required: true,
+      default: 'Initial Post',
+    },
     comments: [
       {
-        type: String,
+        type: ObjectId,
         ref: 'Comment',
       },
     ],
