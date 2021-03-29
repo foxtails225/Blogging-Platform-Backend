@@ -20,6 +20,8 @@ export const signUp = async (req: Request, res: Response, next: NextFunction): P
     //@ts-ignore
     const user: User = await UserModel.create({ ...userData, password: hashedPassword });
     const accessToken: string = createToken(user).token;
+    const io = req.app.get('socketio');
+    io.emit('adminUser');
 
     res.status(201).json({ user, accessToken });
   } catch (error) {

@@ -69,6 +69,26 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
+export const getStockPosts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const { id } = req.params;
+  const limit = 7;
+
+  try {
+    //@ts-ignore
+    const posts: Post[] = await PostModel.aggregate([
+      { $match: { tags: { $elemMatch: { symbol: id } }, status: { $nin: ['rejected', 'pending'] } } },
+      { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
+      { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
+      { $sort: { createdAt: -1 } },
+      { $skip: limit * 1 - limit },
+      { $limit: limit },
+    ]);
+    res.status(201).json({ posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getPostsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id, role } = req.user;
   const { email, page, sortBy, limit } = req.body;
@@ -109,6 +129,8 @@ export const createPost = async (req: RequestWithUser, res: Response, next: Next
     const findPosts: Post[] = await PostModel.find({ slug: postData.slug });
     const slug: string = findPosts.length > 0 ? postData.slug + findPosts.length : postData.slug;
     const post: Post = await PostModel.create({ ...postData, slug, author: _id, day, week, month, year });
+    const io = req.app.get('socketio');
+    io.emit('adminPost');
 
     res.status(201).json({ data: post });
   } catch (error) {

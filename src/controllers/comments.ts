@@ -21,6 +21,8 @@ export const getFlagsAll = async (req: RequestWithUser, res: Response, next: Nex
 export const createComment = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
   const commentData: Comments = req.body;
+  const io = req.app.get('socketio');
+  io.emit('fetchPost');
 
   try {
     if (isEmpty(commentData)) return res.status(400).send({ message: 'Comment failed' });
@@ -68,6 +70,8 @@ export const createCommentFlag = async (req: RequestWithUser, res: Response, nex
     if (isEmpty(flagData)) return res.status(400).send({ message: 'Flag failed' });
     const flag: Flag = await FlagModel.create({ ...flagData, user: _id });
     const comment: Comments = await CommentModel.findByIdAndUpdate(flagData.comment, { $push: { flags: flag._id } });
+    const io = req.app.get('socketio');
+    io.emit('adminComment');
 
     res.status(201).json({ comment });
   } catch (error) {

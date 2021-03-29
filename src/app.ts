@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import 'dotenv/config';
 import express, { Express, Request, Response } from 'express';
+import http from 'http';
+import socket from 'socket.io';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -17,6 +20,9 @@ import routes from './routes';
 validateEnv();
 
 const app: Express = express();
+const server = http.createServer(app);
+//@ts-ignore
+const io = socket(server);
 const port: string | number = process.env.PORT || 3000;
 const env: string = process.env.NODE_ENV || 'development';
 env !== 'production' && set('debug', true);
@@ -45,6 +51,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('./build'));
 app.use(cookieParser());
+app.set('socketio', io);
 
 routes.forEach(route => {
   app.use('/api/', route);
@@ -55,6 +62,6 @@ app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.resolve('./build/' + 'index.html'));
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   logger.info(`App listening on the port ${port}`);
 });
