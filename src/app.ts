@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import 'dotenv/config';
 import express, { Express, Request, Response } from 'express';
-import http from 'http';
+import http from 'https';
 import socket from 'socket.io';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
