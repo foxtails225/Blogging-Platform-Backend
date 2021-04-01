@@ -6,7 +6,8 @@ import users from './users';
 import posts from './post';
 import bookmarks from './bookmarks';
 import comments from './comments';
+import stocks from './stocks';
 
-const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments];
+const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments, stocks];
 
 export default routes;
