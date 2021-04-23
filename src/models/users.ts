@@ -29,6 +29,7 @@ const userSchema: Schema = new Schema(
     lastLoggedIn: Date,
     bio: String,
     quote: String,
+    stripeId: String,
     tier: {
       type: String,
       enum: ['premium', 'basic'],

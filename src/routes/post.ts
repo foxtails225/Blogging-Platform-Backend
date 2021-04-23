@@ -1,11 +1,20 @@
 import { Router } from 'express';
-import { getPost, getStockPosts, getPostsAll, createPost, updateLikedPost, updateStatus } from '../controllers/posts';
+import {
+  getPost,
+  getStockPosts,
+  getPostsAll,
+  createPost,
+  updateLikedPost,
+  updateStatus,
+  getPostById,
+} from '../controllers/posts';
 import authMiddleware from '../middlewares/auth';
 
 const router: Router = Router();
 const path = '/posts';
 
 router.get(`${path}/get/:id`, getPost);
+router.get(`${path}/getById/:id`, getPostById);
 router.get(`${path}/get/stock/:id`, getStockPosts);
 router.post(`${path}/all`, authMiddleware, getPostsAll);
 router.post(`${path}/new`, authMiddleware, createPost);

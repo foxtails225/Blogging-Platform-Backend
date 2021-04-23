@@ -16,6 +16,7 @@ export interface User {
   isPublic: boolean;
   status: boolean;
   reason: string;
+  stripeId: string;
   createdAt: Date;
   updatedAt: Date;
 }

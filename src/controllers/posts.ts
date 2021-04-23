@@ -69,6 +69,18 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
+export const getPostById = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const _id: string = req.params.id;
+
+  try {
+    const findPost: Post | null = await PostModel.findOne({ _id }).populate('author');
+    if (!findPost) return res.status(400).send({ message: 'post is not exist.' });
+    res.status(200).json({ post: findPost });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getStockPosts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const { id } = req.params;
   const limit = 7;

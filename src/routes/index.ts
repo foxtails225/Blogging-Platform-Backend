@@ -7,7 +7,8 @@ import posts from './post';
 import bookmarks from './bookmarks';
 import comments from './comments';
 import stocks from './stocks';
+import stripe from './stripe';
 
-const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments, stocks];
+const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments, stocks, stripe];
 
 export default routes;
