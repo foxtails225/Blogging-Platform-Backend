@@ -1,6 +1,8 @@
 import { model, Schema, Document } from 'mongoose';
 import { User } from '../types/user';
 
+const { ObjectId, String } = Schema.Types;
+
 const userSchema: Schema = new Schema(
   {
     name: {
@@ -53,6 +55,18 @@ const userSchema: Schema = new Schema(
       required: true,
       default: 'Initial Registration',
     },
+    following: [
+      {
+        type: ObjectId,
+        ref: 'User',
+      },
+    ],
+    followers: [
+      {
+        type: ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   { timestamps: true },
 );

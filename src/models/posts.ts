@@ -19,7 +19,11 @@ const postSchema: Schema = new Schema(
     tags: [
       {
         symbol: String,
-        name: String,
+        securityName: String,
+        main: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     viewers: [

@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Response, NextFunction } from 'express';
 import { RequestWithUser } from '../types/auth';
-import { Comments } from '../types/comment';
 import CommentModel from '../models/comments';
 import PostModel from '../models/posts';
 import FlagModel from '../models/flags';
+import NotificationModel from '../models/notification';
 import { isEmpty } from '../utils/util';
 import { Flag } from '../types/flag';
+import { Post } from '../types/post';
+import { Comments } from '../types/comment';
 
 export const getFlagsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   try {
@@ -33,7 +35,16 @@ export const createComment = async (req: RequestWithUser, res: Response, next: N
     const position = findComment.position ? findComment.position + '-' + response._id : response._id + '-' + response._id;
     const comment: Comments = await CommentModel.findByIdAndUpdate(response._id, { parent, position });
     //@ts-ignore
-    await PostModel.findByIdAndUpdate(commentData.post, { $push: { comments: comment._id } });
+    const findPost: Post = await PostModel.findByIdAndUpdate(commentData.post, { $push: { comments: comment._id } });
+    await NotificationModel.create({
+      user: findPost.author,
+      type: 'new_comment',
+      title: `New comment received`,
+      description: commentData.comment,
+      isRead: false,
+      url: '/posts/public/' + findPost.slug,
+    });
+    io.emit('Notify');
 
     res.status(201).json({ comment });
   } catch (error) {

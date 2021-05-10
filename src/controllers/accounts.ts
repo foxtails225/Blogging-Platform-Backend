@@ -38,6 +38,54 @@ export const getStatus = async (req: RequestWithUser, res: Response, next: NextF
   }
 };
 
+export const getFollowing = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { page, limit } = req.body;
+  const skip = limit ? limit : 5;
+
+  try {
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
+    const findAuthors = await UserModel.aggregate([
+      { $match: { _id } },
+      { $addFields: { count: { $size: '$following' } } },
+      { $lookup: { from: 'users', localField: 'following', foreignField: '_id', as: 'following' } },
+      { $project: { following: { $slice: ['$following', skip * page, limit] }, count: -1 } },
+    ]);
+
+    const users = findAuthors.length > 0 && findAuthors[0]?.following;
+    const count = findAuthors.length > 0 && findAuthors[0]?.count;
+
+    res.status(200).json({ users: users ?? [], count: count ?? 0 });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getFollowers = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { page, limit } = req.body;
+  const skip = limit ? limit : 5;
+
+  try {
+    const findUser: User = await UserModel.findOne({ _id }, { _id: 0 });
+    if (!findUser) return res.status(409).send({ message: "You're not user" });
+    const findAuthors = await UserModel.aggregate([
+      { $match: { _id } },
+      { $addFields: { count: { $size: '$followers' } } },
+      { $lookup: { from: 'users', localField: 'followers', foreignField: '_id', as: 'followers' } },
+      { $project: { followers: { $slice: ['$followers', skip * page, limit] }, count: -1 } },
+    ]);
+
+    const users = findAuthors.length > 0 && findAuthors[0]?.followers;
+    const count = findAuthors.length > 0 && findAuthors[0]?.count;
+
+    res.status(200).json({ users: users ?? [], count: count ?? 0 });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getStatistics = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
   const match = { author: _id, status: { $ne: 'rejected' } };
@@ -97,6 +145,30 @@ export const updatePassword = async (req: RequestWithUser, res: Response, next: 
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user: User = await UserModel.findByIdAndUpdate(_id, { password: hashedPassword });
+    if (!user) return res.status(409).send({ message: "You're not user" });
+    res.status(200).json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateFollowers = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const { userId, isFollow } = req.body;
+  let user: User;
+
+  try {
+    const findUser: User = await UserModel.findOne({ _id });
+    if (!findUser || !userId) return res.status(401).send({ message: "You're not user" });
+
+    if (!isFollow) {
+      user = await UserModel.findByIdAndUpdate(userId, { $addToSet: { followers: _id } });
+      await UserModel.findByIdAndUpdate(_id, { $addToSet: { following: userId } });
+    } else {
+      user = await UserModel.findByIdAndUpdate(userId, { $pull: { followers: _id } });
+      await UserModel.findByIdAndUpdate(_id, { $pull: { following: userId } });
+    }
+
     if (!user) return res.status(409).send({ message: "You're not user" });
     res.status(200).json({ user });
   } catch (error) {

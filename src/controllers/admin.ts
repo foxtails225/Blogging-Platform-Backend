@@ -13,7 +13,7 @@ export const getPosts = async (req: Request, res: Response, next: NextFunction):
     const posts: Post[] = await PostModel.find()
       .populate('author')
       .sort(sort)
-      .skip(skip * (page + 1) - skip)
+      .skip(skip * page)
       .limit(skip);
 
     res.status(200).json({ posts, count });
@@ -31,7 +31,7 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
     const count = await UserModel.countDocuments();
     const users: Post[] = await UserModel.find({ role: { $ne: 'admin' } })
       .sort(sort)
-      .skip(skip * (page + 1) - skip)
+      .skip(skip * page)
       .limit(skip);
 
     res.status(200).json({ users, count });

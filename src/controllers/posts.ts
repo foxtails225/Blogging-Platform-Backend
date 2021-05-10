@@ -12,6 +12,8 @@ import PostModel from '../models/posts';
 import ViewModel from '../models/views';
 import BookmarkModel from '../models/bookmarks';
 import { isEmpty } from '../utils/util';
+import NotificationModel from '../models/notification';
+import { NotifyStatus } from '../types/notification';
 
 const { ObjectId } = Types;
 const day = moment().date();
@@ -101,20 +103,29 @@ export const getStockPosts = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const getPostsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { _id, role } = req.user;
-  const { email, page, sortBy, limit } = req.body;
+export const getPostsAll = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  //@ts-ignore
+  const { email, page, sortBy, limit, user } = req.body;
+  const isAdmin = user && user.role === 'admin';
   const sort = sortBy ? sortBy : { createdAt: -1 };
   const skip = limit ? limit : 7;
-  const isAdmin = role === 'admin';
+  const _id = user && user._id;
+  let isAuthor: boolean;
+  let match: any;
 
   try {
-    //@ts-ignore
-    const author: User = await UserModel.findOne({ email });
-    const isAuthor = ObjectId(author._id).equals(_id);
-    const search: any = isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
-    const match = isAdmin ? { author: author._id } : { author: author._id, status: search };
+    if (!email) {
+      match = { status: { $nin: ['rejected', 'pending'] } };
+      isAuthor = false;
+    } else {
+      //@ts-ignore
+      const author: User = await UserModel.findOne({ email });
+      isAuthor = ObjectId(author._id).equals(_id);
+      const search: any = isAuthor ? { $ne: 'rejected' } : { $nin: ['rejected', 'pending'] };
+      match = isAdmin ? { author: author._id } : { author: author._id, status: search };
+    }
     const count = await PostModel.countDocuments(match);
+
     const posts: Post[] = await PostModel.aggregate([
       { $match: match },
       { $addFields: { tags_count: { $size: '$tags' } } },
@@ -122,7 +133,7 @@ export const getPostsAll = async (req: RequestWithUser, res: Response, next: Nex
       { $unwind: { path: '$author', preserveNullAndEmptyArrays: true } },
       { $lookup: { from: 'comments', localField: 'comments', foreignField: '_id', as: 'comments' } },
       { $sort: Object.keys(sort).includes('tags') ? { tags_count: Object.values(sort)[0] } : sort },
-      { $skip: skip * (page + 1) - skip },
+      { $skip: skip * page },
       { $limit: skip },
     ]);
 
@@ -173,9 +184,28 @@ export const updateLikedPost = async (req: RequestWithUser, res: Response, next:
 
 export const updateStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const PostData = req.body;
+  const io = req.app.get('socketio');
 
   try {
     const post: Post = await PostModel.findByIdAndUpdate(PostData._id, PostData);
+    if (PostData.status !== 'pending') {
+      const status: NotifyStatus = PostData.status === 'approved' ? 'post_approved' : 'post_rejected';
+      const url = PostData.status === 'approved' ? '/posts/public/' + post.slug : '#';
+      const description = `${PostData.status === 'approved' ? 'Congrats!' : 'Sorry!'} Your article, "${post.title}", is ${
+        PostData.status === 'approved' ? 'approved' : 'rejected.'
+      }`;
+
+      await NotificationModel.create({
+        user: post.author,
+        type: status,
+        title: `Your article is ${PostData.status}`,
+        description,
+        isRead: false,
+        url,
+      });
+      io.emit('Notify');
+    }
+
     res.status(200).json({ post });
   } catch (error) {
     next(error);

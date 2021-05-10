@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Response, NextFunction } from 'express';
+import NotificationModel from '../models/notification';
 import UserModel from '../models/users';
 import { RequestWithUser } from '../types/auth';
 // import * as Stripe from 'stripe';
@@ -48,7 +49,8 @@ export const createPaymentIntent = async (req: RequestWithUser, res: Response, n
 };
 
 export const transfer = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { stripeId, amount } = req.body;
+  const { stripeId, author, amount, type } = req.body;
+  const io = req.app.get('socketio');
 
   try {
     await stripe.transfers.create({
@@ -56,6 +58,16 @@ export const transfer = async (req: RequestWithUser, res: Response, next: NextFu
       currency: 'usd',
       destination: stripeId,
     });
+
+    await NotificationModel.create({
+      user: author,
+      type: type,
+      title: `New payment received`,
+      description: `You received $${amount}`,
+      isRead: false,
+      url: '#',
+    });
+    io.emit('Notify');
 
     res.status(201).json({ data: 'success' });
   } catch (error) {

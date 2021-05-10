@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getQuote, getSearch, getChart, getStats, getProfile, getStockNews } from '../controllers/stocks';
+import { getQuote, getSearch, getChart, getStats, getProfile, getStockNews, getTopStocks } from '../controllers/stocks';
 
 const router: Router = Router();
 const path = '/stock';
@@ -10,5 +10,6 @@ router.get(`${path}/chart/:id`, getChart);
 router.get(`${path}/advanced-stats/:id`, getStats);
 router.get(`${path}/company/:id`, getProfile);
 router.get(`${path}/news/:id`, getStockNews);
+router.get(`${path}/top`, getTopStocks);
 
 export default router;
