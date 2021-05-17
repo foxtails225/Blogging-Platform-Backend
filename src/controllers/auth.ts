@@ -45,6 +45,7 @@ export const logIn = async (req: Request, res: Response, next: NextFunction): Pr
     if (!isPasswordMatching) return res.status(409).send({ message: "You're password not matching" });
     const TokenData: TokenData = createToken(findUser);
     const cookie: string = createCookie(TokenData);
+    //@ts-ignore
     res.setHeader('Set-Cookie', [cookie]);
     res.status(200).json({ user: findUser, accessToken: TokenData.token });
   } catch (error) {
@@ -60,6 +61,7 @@ export const logOut = async (req: RequestWithUser, res: Response, next: NextFunc
     const findUser: User = await UserModel.findOne({ password: userData.password });
 
     if (!findUser) return res.status(409).send({ message: "You're not user" });
+    //@ts-ignore
     res.setHeader('Set-Cookie', ['Authorization=; Max-age=0']);
     res.status(200).json({ data: findUser });
   } catch (error) {
@@ -69,6 +71,7 @@ export const logOut = async (req: RequestWithUser, res: Response, next: NextFunc
 
 export const createToken = (user: User): TokenData => {
   const dataStoredInToken: DataStoredInToken = { _id: user._id };
+  //@ts-ignore
   const secret: string = process.env.JWT_SECRET;
   const expiresIn: number = 60 * 60 * 24;
 

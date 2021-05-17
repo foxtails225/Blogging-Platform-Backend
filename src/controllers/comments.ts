@@ -8,13 +8,34 @@ import NotificationModel from '../models/notification';
 import { isEmpty } from '../utils/util';
 import { Flag } from '../types/flag';
 import { Post } from '../types/post';
-import { Comments } from '../types/comment';
+import { Comments, CommentsWithPostAndUser } from '../types/comment';
 
 export const getFlagsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   try {
     //@ts-ignore
     const flags: Flag[] = await FlagModel.find({ type: 'comment' }).populate('user');
     res.status(201).json({ flags });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getComments = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { user, page, sortBy, limit } = req.body;
+  const sort = sortBy ? sortBy : { createdAt: -1 };
+  const skip = limit ? limit : 5;
+  const current = page ? page : 0;
+
+  try {
+    //@ts-ignore
+    const comments: CommentsWithPostAndUser[] = await CommentModel.find({ user })
+      .populate('user')
+      .populate('post')
+      .sort(sort)
+      .skip(skip * current)
+      .limit(skip);
+
+    res.status(201).json({ comments });
   } catch (error) {
     next(error);
   }

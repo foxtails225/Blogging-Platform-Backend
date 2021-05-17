@@ -3,10 +3,12 @@ import { Comments } from './comment';
 
 export type PostStatus = 'approved' | 'pending' | 'rejected';
 
+export type Picker = 'bullish' | 'bearish' | 'neutral' | 'no_opinion';
+
 export interface Tag {
   symbol: string;
   securityName: string;
-  main: boolean;
+  main?: boolean;
 }
 
 export interface Post {
@@ -29,6 +31,11 @@ export interface Post {
   month?: number;
   year?: number;
   comments?: Comments[];
+  picker?: Picker;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface PostWithAuthor extends Post {
+  author: User;
 }

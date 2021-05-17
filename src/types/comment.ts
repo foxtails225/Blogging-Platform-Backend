@@ -1,20 +1,29 @@
 import { Flag } from './flag';
+import { Post } from './post';
 import { User } from './user';
 
 export interface Comments {
   _id?: string;
   parent: string;
-  post: string;
+  post: string | Post;
   user: string | User;
   depth?: number;
   position: string;
   liked?: {
     count: number;
-    users: string[] | User[];
+    users: string[];
   };
-  comment: string;
   flags: string[] | Flag[];
-  status: boolean;
+  comment: string;
+  active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface CommentsWithUser extends Comments {
+  user: User;
+}
+
+export interface CommentsWithPostAndUser extends CommentsWithUser {
+  post: Post;
 }

@@ -59,6 +59,11 @@ const postSchema: Schema = new Schema(
         ref: 'Comment',
       },
     ],
+    picker: {
+      type: String,
+      enum: ['bullish', 'bearish', 'neutral', 'no_opinion'],
+      default: 'bullish',
+    },
     day: Number,
     week: Number,
     month: Number,

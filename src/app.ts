@@ -5,6 +5,7 @@ import http from 'http';
 import socket from 'socket.io';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+//@ts-ignore
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
@@ -16,6 +17,7 @@ import errorMiddleware from './middlewares/error';
 import { logger, stream } from './utils/logger';
 import validateEnv from './utils/validateEnv';
 import routes from './routes';
+import updateBannedUsers from './jobs/job-worker';
 
 validateEnv();
 
@@ -64,4 +66,5 @@ app.get('/', (req: Request, res: Response) => {
 
 server.listen(port, () => {
   logger.info(`App listening on the port ${port}`);
+  updateBannedUsers.start();
 });

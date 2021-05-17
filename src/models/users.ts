@@ -32,6 +32,7 @@ const userSchema: Schema = new Schema(
     bio: String,
     quote: String,
     stripeId: String,
+    banned: Date,
     tier: {
       type: String,
       enum: ['premium', 'basic'],

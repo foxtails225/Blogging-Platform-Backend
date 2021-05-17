@@ -1,3 +1,10 @@
+export interface Status {
+  published: number;
+  comments: number;
+  pending: number;
+  tags: number;
+}
+
 export interface User {
   _id: string;
   name: string;
@@ -11,6 +18,7 @@ export interface User {
   lastName: string;
   bio: string;
   lastLoggedIn: Date;
+  banned: Date;
   tier: string;
   role: string;
   isPublic: boolean;

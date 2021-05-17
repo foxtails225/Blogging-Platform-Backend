@@ -75,6 +75,7 @@ export const updateReadAll = async (req: RequestWithUser, res: Response, next: N
   const io = req.app.get('socketio');
 
   try {
+    //@ts-ignore
     const notification: Notification = await NotificationModel.updateMany({ user: _id }, { isRead: true });
     io.emit('Notify');
 

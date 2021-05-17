@@ -4,10 +4,28 @@ import { Response, NextFunction } from 'express';
 import NotificationModel from '../models/notification';
 import UserModel from '../models/users';
 import { RequestWithUser } from '../types/auth';
+import { User } from '../types/user';
 // import * as Stripe from 'stripe';
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const baseUrl = process.env.BASE_URL;
+
+export const getBalance = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+
+  try {
+    const findUser: User = await UserModel.findById(_id);
+    const balance = findUser.stripeId
+      ? await stripe.balance.retrieve({
+          stripeAccount: findUser.stripeId,
+        })
+      : { available: [], instant_available: [], pending: [] };
+
+    res.status(201).json(balance);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const createAccount = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id, email } = req.user;

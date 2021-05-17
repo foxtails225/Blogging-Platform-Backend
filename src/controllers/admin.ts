@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response, NextFunction } from 'express';
 import PostModel from '../models/posts';
 import UserModel from '../models/users';
@@ -29,6 +30,7 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
 
   try {
     const count = await UserModel.countDocuments();
+    //@ts-ignore
     const users: Post[] = await UserModel.find({ role: { $ne: 'admin' } })
       .sort(sort)
       .skip(skip * page)
