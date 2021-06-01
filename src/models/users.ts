@@ -32,7 +32,11 @@ const userSchema: Schema = new Schema(
     bio: String,
     quote: String,
     stripeId: String,
+    code: String,
     banned: Date,
+    recoveryToken: String,
+    expiredIn: Date,
+    registered: Boolean,
     tier: {
       type: String,
       enum: ['premium', 'basic'],

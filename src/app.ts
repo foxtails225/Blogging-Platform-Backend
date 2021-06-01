@@ -17,7 +17,7 @@ import errorMiddleware from './middlewares/error';
 import { logger, stream } from './utils/logger';
 import validateEnv from './utils/validateEnv';
 import routes from './routes';
-import updateBannedUsers from './jobs/job-worker';
+import { updateBannedUsers } from './services/scheduler';
 
 validateEnv();
 

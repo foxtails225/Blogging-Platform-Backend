@@ -161,6 +161,23 @@ export const createPost = async (req: RequestWithUser, res: Response, next: Next
   }
 };
 
+export const updatePost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const postData: Post = req.body;
+
+  try {
+    if (isEmpty(postData)) return res.status(400).send({ message: "You're not postData" });
+    const findPosts: Post[] = await PostModel.find({ slug: postData.slug });
+    const slug: string = findPosts.length > 0 ? postData.slug + findPosts.length : postData.slug;
+    const post: Post = await PostModel.findByIdAndUpdate(postData._id, { ...postData, slug });
+    if (!post) return res.status(400).send({ message: 'This post is not existing' });
+
+    res.status(201).json({ data: post });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateLikedPost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
   const { postId, isLiked } = req.body;
