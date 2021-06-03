@@ -1,2 +1,0 @@
-(this["webpackJsonpdankstocks-client"]=this["webpackJsonpdankstocks-client"]||[]).push([[31],{1358:function(e,n,t){"use strict";t.r(n);var l=t(0),a=t.n(l),c=t(357),s=Object(l.lazy)((function(){return t.e(26).then(t.bind(null,1346))}));n.default=function(){return a.a.createElement(c.a,{title:"Welcome"},a.a.createElement(l.Suspense,{fallback:null},a.a.createElement(s,null)))}}}]);
-//# sourceMappingURL=31.f93115eb.chunk.js.map

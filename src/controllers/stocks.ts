@@ -45,6 +45,7 @@ export const getChart = async (req: Request, res: Response, next: NextFunction):
     const response = await axios.get<Chart[]>(`${IEX_BASE_URL}/stock/${url}`, {
       params: { token: IEX_TOKEN, chartCloseOnly: true, includeToday: true },
     });
+
     //@ts-ignore
     if (response.data && response.data.length > 0) {
       result = response.data.map(item => {

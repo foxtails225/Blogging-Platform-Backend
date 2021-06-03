@@ -14,6 +14,8 @@ import BookmarkModel from '../models/bookmarks';
 import { isEmpty } from '../utils/util';
 import NotificationModel from '../models/notification';
 import { NotifyStatus } from '../types/notification';
+import { Flag } from '../types/flag';
+import FlagModel from '../models/flags';
 
 const { ObjectId } = Types;
 const day = moment().date();
@@ -46,6 +48,7 @@ export const getPost = async (req: Request, res: Response, next: NextFunction): 
     // @ts-ignore
     const post: Post = await PostModel.findOne(query)
       .populate('author')
+      .populate('flags')
       .populate({
         path: 'comments',
         populate: { path: 'flags' },
@@ -162,7 +165,6 @@ export const createPost = async (req: RequestWithUser, res: Response, next: Next
 };
 
 export const updatePost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { _id } = req.user;
   const postData: Post = req.body;
 
   try {
@@ -194,6 +196,32 @@ export const updateLikedPost = async (req: RequestWithUser, res: Response, next:
         });
 
     res.status(200).json({ post });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateFlagPost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const flagData: Flag = req.body;
+  let flag: Flag;
+  let post: Post;
+
+  try {
+    if (isEmpty(flagData)) return res.status(400).send({ message: 'Flag failed' });
+    //@ts-ignore
+    if (flagData.isFlag) {
+      flag = await FlagModel.create({ ...flagData, user: _id });
+      post = await PostModel.findByIdAndUpdate(flagData.post, { $push: { flags: flag._id } });
+    } else {
+      const findFlag: Flag = await FlagModel.findOne({ post: flagData.post, user: _id, type: 'post' });
+      post = await PostModel.findByIdAndUpdate(flagData.post, { $pull: { flags: findFlag._id } });
+      flag = await FlagModel.findByIdAndDelete(findFlag._id);
+    }
+    const io = req.app.get('socketio');
+    io.emit('adminComment');
+
+    res.status(201).json({ post });
   } catch (error) {
     next(error);
   }

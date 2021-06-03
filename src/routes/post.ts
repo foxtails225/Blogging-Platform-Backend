@@ -6,6 +6,7 @@ import {
   createPost,
   updatePost,
   updateLikedPost,
+  updateFlagPost,
   updateStatus,
   getPostById,
 } from '../controllers/posts';
@@ -21,6 +22,7 @@ router.post(`${path}/all`, getPostsAll);
 router.post(`${path}/new`, authMiddleware, createPost);
 router.put(`${path}/update`, authMiddleware, updatePost);
 router.put(`${path}/liked`, authMiddleware, updateLikedPost);
+router.put(`${path}/flaged`, authMiddleware, updateFlagPost);
 router.put(`${path}/update/status`, authMiddleware, updateStatus);
 
 export default router;

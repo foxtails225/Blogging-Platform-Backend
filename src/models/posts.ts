@@ -59,6 +59,12 @@ const postSchema: Schema = new Schema(
         ref: 'Comment',
       },
     ],
+    flags: [
+      {
+        type: ObjectId,
+        ref: 'Flag',
+      },
+    ],
     picker: {
       type: String,
       enum: ['bullish', 'bearish', 'neutral', 'no_opinion'],
