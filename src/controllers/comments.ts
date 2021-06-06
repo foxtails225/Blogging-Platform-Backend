@@ -110,3 +110,20 @@ export const createCommentFlag = async (req: RequestWithUser, res: Response, nex
     next(error);
   }
 };
+
+export const deleteComment = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.query;
+
+  try {
+    const findComment: Comments = await CommentModel.findById(_id);
+    if (!findComment) return res.status(400).send({ message: 'This comment is not existing.' });
+    await PostModel.findByIdAndUpdate(findComment.post, { $pull: { comments: findComment._id } });
+    await CommentModel.findByIdAndDelete(findComment._id);
+    const io = req.app.get('socketio');
+    io.emit('fetchPost');
+
+    res.status(201).json({ data: 'success' });
+  } catch (error) {
+    next(error);
+  }
+};
