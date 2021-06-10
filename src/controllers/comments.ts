@@ -13,7 +13,7 @@ import { Comments, CommentsWithPostAndUser } from '../types/comment';
 export const getFlagsAll = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   try {
     //@ts-ignore
-    const flags: Flag[] = await FlagModel.find({ type: 'comment' }).populate('user');
+    const flags: FlagWithUserAndPost[] = await FlagModel.find({ type: 'comment' }).populate('user').populate('post');
     res.status(201).json({ flags });
   } catch (error) {
     next(error);

@@ -22,6 +22,7 @@ const flagSchema: Schema = new Schema(
       enum: ['post', 'comment'],
     },
     reason: String,
+    description: String,
   },
   { timestamps: true },
 );
