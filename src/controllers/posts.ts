@@ -238,7 +238,7 @@ export const updateStatus = async (req: RequestWithUser, res: Response, next: Ne
       const url = PostData.status === 'approved' ? '/posts/public/' + post.slug : '#';
       const description = `${PostData.status === 'approved' ? 'Congrats!' : 'Sorry!'} Your article, "${post.title}", is ${
         PostData.status === 'approved' ? 'approved' : 'rejected.'
-      }`;
+      }<br /> Reason: ${PostData.reason}`;
 
       await NotificationModel.create({
         user: post.author,
