@@ -10,7 +10,21 @@ import stocks from './stocks';
 import stripe from './stripe';
 import notification from './notification';
 import transaction from './transaction';
+import support from './support';
 
-const routes: Router[] = [admin, account, auth, users, posts, bookmarks, comments, stocks, stripe, notification, transaction];
+const routes: Router[] = [
+  admin,
+  account,
+  auth,
+  users,
+  posts,
+  bookmarks,
+  comments,
+  stocks,
+  stripe,
+  notification,
+  transaction,
+  support,
+];
 
 export default routes;
