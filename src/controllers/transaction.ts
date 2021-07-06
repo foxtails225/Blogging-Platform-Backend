@@ -22,8 +22,8 @@ export const TransactionsAll = async (req: RequestWithUser, res: Response, next:
   const skip = limit ? limit : 7;
 
   try {
-    const count = await TransactionModel.countDocuments({ user: _id });
-    const transactions: Transaction[] = await TransactionModel.find({ user: _id })
+    const count = await TransactionModel.countDocuments({ $or: [{ user: _id }, { client: _id }] });
+    const transactions: Transaction[] = await TransactionModel.find({ $or: [{ user: _id }, { client: _id }] })
       .sort(sort)
       .skip(skip * page)
       .limit(skip);

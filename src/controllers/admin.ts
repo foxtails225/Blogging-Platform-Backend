@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response, NextFunction } from 'express';
+import { RequestWithUser } from '../types/auth';
 import PostModel from '../models/posts';
 import UserModel from '../models/users';
 import { Post } from '../types/post';
+import { User } from '../types/user';
 
 export const getPosts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const { page, sortBy, limit } = req.body;
@@ -37,6 +39,27 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
       .limit(skip);
 
     res.status(200).json({ users, count });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAlert = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const user: User = await UserModel.findOne({ role: 'admin' }, { alert: 1, alertType: 1, _id: 0 });
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createAlert = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.user;
+  const alertData = req.body;
+
+  try {
+    const user: User = await UserModel.findByIdAndUpdate(_id, alertData);
+    res.status(200).json({ user });
   } catch (error) {
     next(error);
   }

@@ -37,6 +37,12 @@ const userSchema: Schema = new Schema(
     recoveryToken: String,
     expiredIn: Date,
     registered: Boolean,
+    alert: String,
+    alertType: {
+      type: String,
+      enum: ['success', 'info', 'warning', 'error'],
+      default: 'user',
+    },
     tier: {
       type: String,
       enum: ['premium', 'basic'],

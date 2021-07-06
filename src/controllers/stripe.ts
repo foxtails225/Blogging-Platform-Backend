@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Response, NextFunction } from 'express';
 import NotificationModel from '../models/notification';
+import TransactionModel from '../models/transaction';
 import UserModel from '../models/users';
 import { RequestWithUser } from '../types/auth';
 import { User } from '../types/user';
-// import * as Stripe from 'stripe';
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const baseUrl = process.env.BASE_URL;
@@ -86,6 +86,21 @@ export const transfer = async (req: RequestWithUser, res: Response, next: NextFu
       url: '#',
     });
     io.emit('Notify');
+
+    res.status(201).json({ data: 'success' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createRefund = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id, payment_intent } = req.body;
+
+  try {
+    await TransactionModel.findByIdAndUpdate(_id, { refund: true });
+    await stripe.refunds.create({
+      payment_intent,
+    });
 
     res.status(201).json({ data: 'success' });
   } catch (error) {
