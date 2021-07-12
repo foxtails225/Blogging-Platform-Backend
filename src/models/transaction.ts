@@ -16,7 +16,14 @@ const transactionSchema: Schema = new Schema(
     amount: Number,
     fee: Number,
     paymentId: String,
-    refund: Boolean,
+    refund: {
+      type: Boolean,
+      default: false,
+    },
+    requestRefund: {
+      type: Boolean,
+      default: false,
+    },
     type: {
       type: String,
       enum: ['post_approved', 'tips'],

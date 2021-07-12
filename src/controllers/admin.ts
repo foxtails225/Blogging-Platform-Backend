@@ -3,8 +3,10 @@ import { Request, Response, NextFunction } from 'express';
 import { RequestWithUser } from '../types/auth';
 import PostModel from '../models/posts';
 import UserModel from '../models/users';
+import TransactionModel from '../models/transaction';
 import { Post } from '../types/post';
 import { User } from '../types/user';
+import { Transaction } from '../types/transaction';
 
 export const getPosts = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const { page, sortBy, limit } = req.body;
@@ -39,6 +41,25 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
       .limit(skip);
 
     res.status(200).json({ users, count });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRefunds = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { page, sortBy, limit } = req.body;
+  const sort = sortBy ? sortBy : { createdAt: -1 };
+  const skip = limit ? limit : 7;
+
+  try {
+    const count = await TransactionModel.countDocuments({ requestRefund: true });
+    const transactions: Transaction[] = await TransactionModel.find({ requestRefund: true })
+      .populate('client')
+      .sort(sort)
+      .skip(skip * page)
+      .limit(skip);
+
+    res.status(201).json({ transactions, count });
   } catch (error) {
     next(error);
   }

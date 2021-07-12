@@ -24,11 +24,25 @@ export const TransactionsAll = async (req: RequestWithUser, res: Response, next:
   try {
     const count = await TransactionModel.countDocuments({ $or: [{ user: _id }, { client: _id }] });
     const transactions: Transaction[] = await TransactionModel.find({ $or: [{ user: _id }, { client: _id }] })
+      .populate('client')
       .sort(sort)
       .skip(skip * page)
       .limit(skip);
 
     res.status(201).json({ transactions, count });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const RefundTransaction = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const { _id } = req.body;
+  const io = req.app.get('socketio');
+
+  try {
+    const transaction: Transaction = await TransactionModel.findByIdAndUpdate(_id, { requestRefund: true });
+    io.emit('requestRefund');
+    res.status(200).json({ transaction });
   } catch (error) {
     next(error);
   }
