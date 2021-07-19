@@ -1,12 +1,7 @@
 import AWS from 'aws-sdk';
+import AWS_CONFIG from './aws-config';
 
-const { AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION } = process.env;
-const SES_CONFIG = {
-  accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_KEY,
-  region: AWS_REGION,
-};
-const AWS_SES = new AWS.SES(SES_CONFIG);
+const AWS_SES = new AWS.SES(AWS_CONFIG);
 
 export const sendEmail = (sender: string, receiver: string, header: string, data: string) => {
   const params = {

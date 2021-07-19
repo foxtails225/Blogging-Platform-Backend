@@ -2,6 +2,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import moment from 'moment';
+import AWS from 'aws-sdk';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
 import { RequestWithUser } from '../types/auth';
 import { Post } from '../types/post';
 import { User } from '../types/user';
@@ -16,12 +19,27 @@ import NotificationModel from '../models/notification';
 import { NotifyStatus } from '../types/notification';
 import { Flag } from '../types/flag';
 import FlagModel from '../models/flags';
+import AWS_CONFIG from '../services/aws-config';
+
+const { AWS_S3_BUCKET_NAME } = process.env;
+const s3 = new AWS.S3(AWS_CONFIG);
 
 const { ObjectId } = Types;
 const day = moment().date();
 const week = moment().week();
 const month = moment().month();
 const year = moment().year();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: AWS_S3_BUCKET_NAME,
+    acl: 'public-read',
+    key: function (request, file, cb) {
+      cb(null, `${Date.now().toString()} - ${file.originalname}`);
+    },
+  }),
+}).array('upload', 1);
 
 export const getPost = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   // @ts-ignore
@@ -164,6 +182,18 @@ export const createPost = async (req: RequestWithUser, res: Response, next: Next
   }
 };
 
+export const uploadImage = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    upload(req, res, error => {
+      if (error) return res.status(404);
+      // @ts-ignore
+      res.status(201).json({ url: req.files[0].location });
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updatePost = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const postData: Post = req.body;
 
@@ -236,14 +266,14 @@ export const updateStatus = async (req: RequestWithUser, res: Response, next: Ne
     if (PostData.status !== 'pending') {
       const status: NotifyStatus = PostData.status === 'approved' ? 'post_approved' : 'post_rejected';
       const url = PostData.status === 'approved' ? '/posts/public/' + post.slug : '#';
-      const description = `${PostData.status === 'approved' ? 'Congrats!' : 'Sorry!'} Your article, "${post.title}", is ${
+      const description = `${PostData.status === 'approved' ? 'Congrats!' : 'Sorry!'} Your article, "${post.title}", was ${
         PostData.status === 'approved' ? 'approved' : 'rejected.'
       }<br /> Reason: ${PostData.reason}`;
 
       await NotificationModel.create({
         user: post.author,
         type: status,
-        title: `Your article is ${PostData.status}`,
+        title: `Your article was ${PostData.status}`,
         description,
         isRead: false,
         url,

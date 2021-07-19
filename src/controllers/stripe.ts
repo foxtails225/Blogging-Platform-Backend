@@ -94,13 +94,21 @@ export const transfer = async (req: RequestWithUser, res: Response, next: NextFu
 };
 
 export const createRefund = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { _id, payment_intent } = req.body;
+  const { _id, payment_intent, user } = req.body;
+  const io = req.app.get('socketio');
 
   try {
     await TransactionModel.findByIdAndUpdate(_id, { refund: true });
-    await stripe.refunds.create({
-      payment_intent,
+    const response = await stripe.refunds.create({ payment_intent });
+    await NotificationModel.create({
+      user,
+      type: 'tip_refunded',
+      title: `Tip refunded`,
+      description: `Unfortunately a ${response.amount} tip was refunded `,
+      isRead: false,
+      url: '#',
     });
+    io.emit('Notify');
 
     res.status(201).json({ data: 'success' });
   } catch (error) {

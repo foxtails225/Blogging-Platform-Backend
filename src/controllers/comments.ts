@@ -60,7 +60,7 @@ export const createComment = async (req: RequestWithUser, res: Response, next: N
     await NotificationModel.create({
       user: findPost.author,
       type: 'new_comment',
-      title: `New comment received`,
+      title: `New comment`,
       description: commentData.comment,
       isRead: false,
       url: '/posts/public/' + findPost.slug,

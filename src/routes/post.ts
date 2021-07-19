@@ -4,6 +4,7 @@ import {
   getStockPosts,
   getPostsAll,
   createPost,
+  uploadImage,
   updatePost,
   updateLikedPost,
   updateFlagPost,
@@ -20,6 +21,7 @@ router.get(`${path}/getById/:id`, getPostById);
 router.get(`${path}/get/stock/:id`, getStockPosts);
 router.post(`${path}/all`, getPostsAll);
 router.post(`${path}/new`, authMiddleware, createPost);
+router.post(`${path}/upload-image`, authMiddleware, uploadImage);
 router.put(`${path}/update`, authMiddleware, updatePost);
 router.put(`${path}/liked`, authMiddleware, updateLikedPost);
 router.put(`${path}/flaged`, authMiddleware, updateFlagPost);
