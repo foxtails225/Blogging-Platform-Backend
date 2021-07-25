@@ -9,7 +9,7 @@ import { User } from '../types/user';
 import { RequestWithUser, DataStoredInToken, TokenData } from '../types/auth';
 import UserModel from '../models/users';
 import { isEmpty } from '../utils/util';
-import { sendEmail } from '../services/aws-ses';
+import { sendTemplateEmail } from '../services/aws-ses';
 
 const { BASE_URL } = process.env;
 
@@ -27,8 +27,9 @@ export const signUp = async (req: Request, res: Response, next: NextFunction): P
     if (findUser) return res.status(409).send({ message: `You're email ${userData.email} already exists` });
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user: User = await UserModel.create({ ...userData, password: hashedPassword, expiredIn, code, registered: false });
-    const data = `Your verification code for dankstocks.com is ${code}`;
-    sendEmail(sender, userData.email, 'Verify Code', data);
+    // @ts-ignore eslint-disable-next-line prettier/prettier
+    const data = `{ \"name\":\"${userData.name}\", \"code\": \"${code}\" }`;
+    sendTemplateEmail(sender, userData.email, 'account_confirmation', data);
 
     res.status(201).json({ user });
   } catch (error) {
@@ -95,8 +96,8 @@ export const recoveryLink = async (req: Request, res: Response, next: NextFuncti
     const recoveryToken: string = createToken(findUser).token;
     const user: User = await UserModel.findByIdAndUpdate(findUser._id, { recoveryToken, expiredIn });
     const recoveryUrl = `${BASE_URL}/password-reset/recovery_token=${recoveryToken}`;
-    const data = `Dankstocks.com passowrd recovery link is <a href=${recoveryUrl}>${recoveryUrl}</a>`;
-    sendEmail(sender, email, 'Password Reset Link', data);
+    const data = `{ \"name\":\"${user.name}\", \"recoveryUrl\": \"${recoveryUrl}\" }`;
+    sendTemplateEmail(sender, email, 'account_password_reset', data);
 
     res.status(201).json({ user });
   } catch (error) {
@@ -130,7 +131,9 @@ export const resendCode = async (req: Request, res: Response, next: NextFunction
   try {
     const user: User = await UserModel.findOneAndUpdate({ email }, { code, expiredIn });
     if (!user) return res.status(409).send({ message: `Email ${email} is not existing.` });
-    sendEmail(sender, email, 'Verify Code', code);
+    // @ts-ignore eslint-disable-next-line prettier/prettier
+    const data = `{ \"name\":\"${user.name}\", \"code\": \"${code}\" }`;
+    sendTemplateEmail(sender, email, 'account_confirmation', data);
 
     res.status(201).json({ user });
   } catch (error) {

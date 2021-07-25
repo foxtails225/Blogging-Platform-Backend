@@ -32,7 +32,7 @@ export const sendTemplateEmail = (sender: string, receiver: string, template: st
     Source: sender,
     Template: template,
     Destination: {
-      ToAddresse: [receiver],
+      ToAddresses: [receiver],
     },
     TemplateData: data,
   };

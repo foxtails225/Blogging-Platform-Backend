@@ -41,7 +41,6 @@ const userSchema: Schema = new Schema(
     alertType: {
       type: String,
       enum: ['success', 'info', 'warning', 'error'],
-      default: 'user',
     },
     tier: {
       type: String,
