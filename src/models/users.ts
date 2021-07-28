@@ -38,6 +38,7 @@ const userSchema: Schema = new Schema(
     expiredIn: Date,
     registered: Boolean,
     alert: String,
+    alertChecked: Boolean,
     alertType: {
       type: String,
       enum: ['success', 'info', 'warning', 'error'],

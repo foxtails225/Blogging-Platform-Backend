@@ -67,7 +67,7 @@ export const getRefunds = async (req: RequestWithUser, res: Response, next: Next
 
 export const getAlert = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const user: User = await UserModel.findOne({ role: 'admin' }, { alert: 1, alertType: 1, _id: 0 });
+    const user: User = await UserModel.findOne({ role: 'admin' }, { alert: 1, alertType: 1, alertChecked: 1, _id: 0 });
     res.status(200).json(user);
   } catch (error) {
     next(error);
