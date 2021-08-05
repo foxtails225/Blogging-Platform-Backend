@@ -50,7 +50,7 @@ export const logIn = async (req: Request, res: Response, next: NextFunction): Pr
     if (!findUser) return res.status(409).send({ message: `You're email ${userData.email} not found` });
     const isPasswordMatching: boolean = await bcrypt.compare(userData.password, findUser.password);
 
-    if (!isPasswordMatching) return res.status(409).send({ message: "You're password not matching" });
+    if (!isPasswordMatching) return res.status(409).send({ message: 'Your password is incorrect' });
     const TokenData: TokenData = createToken(findUser);
     const cookie: string = createCookie(TokenData);
     //@ts-ignore
