@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
+import PostModel from '../models/posts';
+import SearchModel from '../models/search';
+import { Search } from '../types/search';
 import { Tag } from '../types/post';
 import { Chart, KeyStats, Profile, Quote } from '../types/stock';
-import PostModel from '../models/posts';
 
 const { IEX_BASE_URL, IEX_TOKEN, STOCK_NEWS_BASE_URL, STOCK_NEWS_TOKEN } = process.env;
 
@@ -92,9 +94,10 @@ export const getStockNews = async (req: Request, res: Response, next: NextFuncti
   const { items } = req.query;
 
   try {
-    const response = await axios.get<Profile>(`${STOCK_NEWS_BASE_URL}`, {
-      params: { tickers: id, items, token: STOCK_NEWS_TOKEN },
-    });
+    const params =
+      id !== 'general' ? { tickers: id, items, token: STOCK_NEWS_TOKEN } : { section: 'general', items, token: STOCK_NEWS_TOKEN };
+    const baseUrl = id !== 'general' ? STOCK_NEWS_BASE_URL : `${STOCK_NEWS_BASE_URL}/category`;
+    const response = await axios.get<Profile>(baseUrl, { params });
 
     res.status(200).json(response.data);
   } catch (error) {
@@ -103,6 +106,28 @@ export const getStockNews = async (req: Request, res: Response, next: NextFuncti
 };
 
 export const getTopStocks = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const quotes: Quote[] = [];
+
+  try {
+    const data = await SearchModel.find().sort({ count: -1 }).limit(7);
+
+    for (const tag of data) {
+      const response = await axios.get<Quote>(`${IEX_BASE_URL}/stock/${tag.symbol}/quote`, {
+        params: { token: IEX_TOKEN },
+      });
+      quotes.push(response.data);
+    }
+    quotes
+      .sort((a, b) => Number(a.latestPrice) - Number(b.latestPrice))
+      .sort((a, b) => Number(a.changePercent) - Number(b.changePercent));
+
+    res.status(200).json({ quotes: quotes.reverse() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLegacyTopStocks = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const quotes: Quote[] = [];
 
   try {
@@ -146,6 +171,24 @@ export const getTopStocks = async (req: Request, res: Response, next: NextFuncti
       .sort((a, b) => Number(a.changePercent) - Number(b.changePercent));
 
     res.status(200).json({ quotes: quotes.reverse().slice(0, 5) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createStockBySearch = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const { symbol } = req.body;
+
+  try {
+    const findSearch: Search = await SearchModel.findOne({ symbol });
+
+    if (findSearch) {
+      await SearchModel.findByIdAndUpdate(findSearch._id, { $inc: { count: 1 } });
+    } else {
+      await SearchModel.create({ symbol });
+    }
+
+    res.status(200).send({ message: 'Created successfully' });
   } catch (error) {
     next(error);
   }

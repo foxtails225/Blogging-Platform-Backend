@@ -1,2 +1,0 @@
-(this["webpackJsonpdankstocks-client"]=this["webpackJsonpdankstocks-client"]||[]).push([[31],{1358:function(e,n,t){"use strict";t.r(n);var a=t(0),c=t.n(a),l=t(358),s=Object(a.lazy)((function(){return t.e(29).then(t.bind(null,1347))}));n.default=function(){return c.a.createElement(l.a,{title:"Privacy Policy"},c.a.createElement(a.Suspense,{fallback:null},c.a.createElement(s,null)))}}}]);
-//# sourceMappingURL=31.2158e69d.chunk.js.map
