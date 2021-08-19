@@ -8,7 +8,6 @@ import { RequestWithUser } from '../types/auth';
 import { User } from '../types/user';
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const baseUrl = process.env.BASE_URL;
 
 export const getBalance = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const { _id } = req.user;
@@ -35,8 +34,8 @@ export const createAccount = async (req: RequestWithUser, res: Response, next: N
     const account = await stripe.accounts.create({ type: 'express', email, country: 'US' });
     const accountLinks = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: baseUrl,
-      return_url: baseUrl + returnUrl,
+      refresh_url: 'https://dankstocks.com',
+      return_url: 'https://dankstocks.com' + returnUrl,
       type: 'account_onboarding',
     });
 
