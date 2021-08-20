@@ -109,7 +109,7 @@ export const getTopStocks = async (req: Request, res: Response, next: NextFuncti
   const quotes: Quote[] = [];
 
   try {
-    const data = await SearchModel.find().sort({ count: -1 }).limit(7);
+    const data = await SearchModel.find().sort({ count: -1 }).limit(10);
 
     for (const tag of data) {
       const response = await axios.get<Quote>(`${IEX_BASE_URL}/stock/${tag.symbol}/quote`, {
