@@ -59,6 +59,17 @@ export const getTopAuthors = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const updateAvatar = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
+  const userData = req.body;
+
+  try {
+    const user: User = await UserModel.findByIdAndUpdate(userData._id, userData);
+    res.status(200).json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const userData = req.body;
 
