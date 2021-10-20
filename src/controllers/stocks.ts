@@ -180,7 +180,7 @@ export const createStockBySearch = async (req: Request, res: Response, next: Nex
   const { symbol } = req.body;
 
   try {
-    const findSearch: Search = await SearchModel.findOne({ symbol });
+    const findSearch: Search = await SearchModel.findOne({ symbol: symbol.toUpperCase() });
 
     if (findSearch) {
       await SearchModel.findByIdAndUpdate(findSearch._id, { $inc: { count: 1 } });
