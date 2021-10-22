@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { NextFunction, Request, Response } from 'express';
+import moment from 'moment';
 import { User } from '../types/user';
 import UserModel from '../models/users';
 import PostModel from '../models/posts';
 import { RequestWithUser } from '../types/auth';
+import { sendTemplateEmail } from '../services/aws-ses';
 
 export const getUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const userId: string = req.params.id;
@@ -72,9 +74,18 @@ export const updateAvatar = async (req: RequestWithUser, res: Response, next: Ne
 
 export const updateStatus = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
   const userData = req.body;
+  const today = moment().toDate();
+  const sender = 'autoreplygang@dankstocks.com';
+  const summary = 'Your suspension has ended!';
 
   try {
     const user: User = await UserModel.findByIdAndUpdate(userData._id, userData);
+    if (userData?.banned) {
+      const period = `${today} - ${user.banned}`;
+      const reason = `You has been suspended because ${user.reason}`;
+      const data = `{ \"name\":\"${user.name}\", \"summary\":\"${summary}\", \"period\":\"${period}\", \"reason\":\"${reason}\" }`;
+      sendTemplateEmail(sender, user.email, 'account_banned', data);
+    }
     res.status(200).json({ user });
   } catch (error) {
     next(error);
