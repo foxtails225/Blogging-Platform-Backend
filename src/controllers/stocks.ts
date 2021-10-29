@@ -50,10 +50,14 @@ export const getChart = async (req: Request, res: Response, next: NextFunction):
 
     //@ts-ignore
     if (response.data && response.data.length > 0) {
-      result = response.data.map(item => {
-        const date = type === 'dynamic' ? item.date + ' ' + item.minute : item.date;
-        return [Date.parse(date), item.close];
-      });
+      result = response.data
+        .filter(item => item.close)
+        .map(item => {
+          const time = type === 'dynamic' ? item.date + ' ' + item.minute : item.date;
+          const timestamp = Date.parse(time);
+          const date = new Date(timestamp);
+          return { date: date, close: item.close };
+        });
     }
     res.status(200).json(result);
   } catch (error) {

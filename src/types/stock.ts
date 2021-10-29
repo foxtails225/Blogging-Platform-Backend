@@ -13,6 +13,7 @@ export interface Chart {
   date: string;
   minute: string;
   close: number;
+  updated?: string;
 }
 
 export interface Profile {
