@@ -93,6 +93,48 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
   }
 };
 
+export const getIncome = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const { id } = req.params;
+
+  try {
+    const response = await axios.get(`${IEX_BASE_URL}/stock/${id}/income`, {
+      params: { token: IEX_TOKEN, period: 'annual', last: 5 },
+    });
+
+    res.status(200).json(response.data.income);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBalanceSheet = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const { id } = req.params;
+
+  try {
+    const response = await axios.get(`${IEX_BASE_URL}/stock/${id}/balance-sheet`, {
+      params: { token: IEX_TOKEN, period: 'annual', last: 5 },
+    });
+
+    res.status(200).json(response.data.balancesheet);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCashFlow = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  const { id } = req.params;
+
+  try {
+    const response = await axios.get(`${IEX_BASE_URL}/stock/${id}/cash-flow`, {
+      params: { token: IEX_TOKEN, period: 'annual', last: 5 },
+    });
+
+    res.status(200).json(response.data.cashflow);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getStockNews = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   const { id } = req.params;
   const { items } = req.query;
