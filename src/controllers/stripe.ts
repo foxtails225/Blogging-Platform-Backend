@@ -31,7 +31,7 @@ export const createAccount = async (req: RequestWithUser, res: Response, next: N
   const { returnUrl } = req.body;
 
   try {
-    const account = await stripe.accounts.create({ type: 'express', email, country: 'US' });
+    const account = await stripe.accounts.create({ type: 'express', email, country: 'US', business_type: 'individual' });
     const accountLinks = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: 'https://dankstocks.com',
