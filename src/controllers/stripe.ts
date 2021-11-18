@@ -27,11 +27,20 @@ export const getBalance = async (req: RequestWithUser, res: Response, next: Next
 };
 
 export const createAccount = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<any> => {
-  const { _id, email } = req.user;
+  const { _id, email, name } = req.user;
   const { returnUrl } = req.body;
 
   try {
-    const account = await stripe.accounts.create({ type: 'express', email, country: 'US', business_type: 'individual' });
+    const account = await stripe.accounts.create({
+      type: 'express',
+      email,
+      country: 'US',
+      business_type: 'individual',
+      business_profile: {
+        url: process.env.BASE_URL + '/users/' + name,
+      },
+    });
+
     const accountLinks = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: 'https://dankstocks.com',
