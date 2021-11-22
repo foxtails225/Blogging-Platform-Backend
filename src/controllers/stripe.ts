@@ -37,7 +37,7 @@ export const createAccount = async (req: RequestWithUser, res: Response, next: N
       country: 'US',
       business_type: 'individual',
       business_profile: {
-        url: process.env.BASE_URL + '/users/' + name,
+        url: 'https://dankstocks.com/users/' + name.replace(' ', '%20'),
       },
     });
 
